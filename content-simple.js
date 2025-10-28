@@ -39,6 +39,59 @@ function isStuck() {
   return timeSinceActivity > STUCK_TIMEOUT;
 }
 
+// Check for LinkedIn's daily Easy Apply limit
+function checkDailyLimit() {
+  try {
+    // List of limit message patterns (case-insensitive)
+    const limitPatterns = [
+      "You've reached today's Easy Apply limit",
+      "You've reached today's easy apply limit",
+      "reached today's Easy Apply limit",
+      "Great effort applying today",
+      "we limit daily submissions",
+      "continue applying tomorrow",
+      "exceeded the daily application limit",
+      "reached today\\'s easy apply limit"
+    ];
+
+    // Search in entire page text
+    const bodyText = document.body.innerText || '';
+
+    for (const pattern of limitPatterns) {
+      if (bodyText.toLowerCase().includes(pattern.toLowerCase())) {
+        log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        log('🚫 DAILY LIMIT REACHED!');
+        log(`   Message detected: "${pattern}"`);
+        log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        log('LinkedIn limits Easy Apply to ~50-100 per day');
+        log('📊 Session stats:');
+        log(`   ✅ Applied: ${appliedCount}`);
+        log(`   ⏭️  Skipped: ${skippedCount}`);
+        log('⏰ You can continue applying tomorrow!');
+        log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return true;
+      }
+    }
+
+    // Also check for specific error messages in modal/toast elements
+    const errorElements = document.querySelectorAll('.artdeco-inline-feedback, .artdeco-toast-item, .artdeco-modal__content');
+    for (const element of errorElements) {
+      const elementText = element.textContent || '';
+      for (const pattern of limitPatterns) {
+        if (elementText.toLowerCase().includes(pattern.toLowerCase())) {
+          log('🚫 DAILY LIMIT DETECTED in error element!');
+          return true;
+        }
+      }
+    }
+
+    return false;
+  } catch (error) {
+    log(`⚠️ Error checking daily limit: ${error.message}`);
+    return false;
+  }
+}
+
 // IMPROVED: Function to find and click Done button with exhaustive search
 async function findAndClickDoneButton(contextElement = document, contextName = 'page', maxAttempts = 15) {
   log(`🔍 [${contextName}] Starting exhaustive search for Done button...`);
@@ -343,6 +396,19 @@ async function mainLoop() {
 
   while (isRunning) {
     try {
+      // 🆕 CHECK: Daily limit reached?
+      if (checkDailyLimit()) {
+        log('⛔ Stopping bot: Daily limit reached');
+        isRunning = false;
+        await chrome.storage.local.set({ isRunning: false });
+        chrome.runtime.sendMessage({
+          type: 'updateStatus',
+          status: 'stopped',
+          message: 'Daily limit reached'
+        });
+        break;
+      }
+
       // 🆕 CHECK: Script stuck? (no activity for 2 minutes)
       if (isStuck()) {
         log('🚨 SCRIPT STUCK DETECTED: No activity for 2 minutes!');
@@ -1299,6 +1365,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateAppliedCount();
         updateSkippedCount();
         sendResponse({ success: true, message: 'Counters reset' });
+      } else if (request.action === 'clearAppliedJobs') {
+        appliedJobs = [];
+        await chrome.storage.local.set({ appliedJobs: [] });
+        log('🗑️ Applied jobs list cleared');
+        sendResponse({ success: true, message: 'Applied jobs cleared' });
       }
     } catch (error) {
       log(`❌ Message handler error: ${error.message}`);

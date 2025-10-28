@@ -22,6 +22,11 @@ function setupTabs() {
       tab.classList.add('active');
       const tabName = tab.getAttribute('data-tab');
       document.getElementById(`${tabName}-tab`).classList.add('active');
+
+      // Load applied jobs when tab is opened
+      if (tabName === 'applied') {
+        loadAppliedJobs();
+      }
     });
   });
 }
@@ -246,3 +251,98 @@ function convertToCSV(jobs) {
     ...rows.map(row => row.join(','))
   ].join('\n');
 }
+
+// Load and display applied jobs
+async function loadAppliedJobs() {
+  try {
+    const { appliedJobs = [] } = await chrome.storage.local.get(['appliedJobs']);
+
+    const listContainer = document.getElementById('applied-jobs-list');
+    const countElement = document.getElementById('applied-jobs-count');
+
+    countElement.textContent = appliedJobs.length;
+
+    if (appliedJobs.length === 0) {
+      listContainer.innerHTML = `
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 6H16V4C16 2.89543 15.1046 2 14 2H10C8.89543 2 8 4V6H4C2.89543 6 2 6.89543 2 8V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V8C22 6.89543 21.1046 6 20 6Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 6V4H16V6" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 11V17M9 14H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <p>No applications yet</p>
+          <small>Start applying to see your job applications here</small>
+        </div>
+      `;
+      return;
+    }
+
+    // Sort by date (most recent first)
+    const sortedJobs = [...appliedJobs].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    listContainer.innerHTML = sortedJobs.map(job => `
+      <div class="job-card">
+        <div class="job-card-header">
+          <div>
+            <h4 class="job-title">${escapeHtml(job.title)}</h4>
+            <p class="job-company">${escapeHtml(job.company)}</p>
+            ${job.location ? `<p class="job-location">📍 ${escapeHtml(job.location)}</p>` : ''}
+          </div>
+          <span class="job-time">${formatTimeAgo(job.date)}</span>
+        </div>
+        <a href="${job.link}" target="_blank" class="job-link">
+          View on LinkedIn
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    `).join('');
+
+  } catch (error) {
+    console.error('Error loading applied jobs:', error);
+  }
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Format time ago
+function formatTimeAgo(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now - date) / 1000);
+
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+  return date.toLocaleDateString();
+}
+
+// Clear all applied jobs
+document.getElementById('clear-applied-jobs')?.addEventListener('click', async () => {
+  if (!confirm('Clear all applied jobs from the list? This cannot be undone.')) return;
+
+  try {
+    await chrome.storage.local.set({ appliedJobs: [] });
+    loadAppliedJobs();
+
+    // Also try to clear from content script
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab) {
+      try {
+        await chrome.tabs.sendMessage(tab.id, { action: 'clearAppliedJobs' });
+      } catch (e) {
+        // Content script might not be loaded, that's okay
+      }
+    }
+  } catch (error) {
+    console.error('Error clearing applied jobs:', error);
+  }
+});
