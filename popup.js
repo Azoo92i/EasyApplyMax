@@ -50,29 +50,33 @@ async function loadConfig() {
   document.getElementById('maxApplications').value = config.maxApplications || '50';
   document.getElementById('autoNextPage').checked = config.autoNextPage !== false;
 
-  // Setup auto-save on all fields
+  // Setup auto-save listeners after loading
   setupAutoSave();
 }
 
-// Auto-save indicator
-let saveTimeout;
-function showAutoSaveIndicator(saving = false) {
-  const indicator = document.getElementById('autosave-indicator');
-  indicator.classList.remove('show', 'saving');
+// Auto-save configuration on change
+function setupAutoSave() {
+  const inputIds = [
+    'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode', 'city',
+    'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications'
+  ];
 
-  if (saving) {
-    indicator.classList.add('saving', 'show');
-    indicator.querySelector('span').textContent = 'Saving...';
-  } else {
-    indicator.classList.add('show');
-    indicator.querySelector('span').textContent = 'Saved';
-    setTimeout(() => {
-      indicator.classList.remove('show');
-    }, 2000);
+  // Add listeners to text/number inputs
+  inputIds.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', debounce(saveConfig, 500));
+    }
+  });
+
+  // Add listener to checkbox
+  const autoNextPage = document.getElementById('autoNextPage');
+  if (autoNextPage) {
+    autoNextPage.addEventListener('change', saveConfig);
   }
 }
 
-// Auto-save configuration
+// Save configuration automatically
 async function saveConfig() {
   const config = {
     firstName: document.getElementById('firstName').value,
@@ -88,37 +92,37 @@ async function saveConfig() {
     autoNextPage: document.getElementById('autoNextPage').checked
   };
 
-  showAutoSaveIndicator(true);
   await chrome.storage.sync.set(config);
-  showAutoSaveIndicator(false);
+
+  // Subtle visual feedback (optional)
+  showSaveIndicator();
 }
 
-// Setup auto-save on all form fields
-function setupAutoSave() {
-  const inputFields = [
-    'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-    'city', 'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications'
-  ];
+// Debounce function to avoid saving on every keystroke
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
-  inputFields.forEach(fieldId => {
-    const field = document.getElementById(fieldId);
-    if (field) {
-      field.addEventListener('input', () => {
-        // Debounce: wait 500ms after user stops typing
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-          saveConfig();
-        }, 500);
-      });
-    }
-  });
+// Show subtle save indicator
+function showSaveIndicator() {
+  const header = document.querySelector('.header .version');
+  if (header) {
+    const originalText = header.textContent;
+    header.textContent = '✓ Saved';
+    header.style.color = '#10b981';
 
-  // For checkbox, save immediately
-  const checkbox = document.getElementById('autoNextPage');
-  if (checkbox) {
-    checkbox.addEventListener('change', () => {
-      saveConfig();
-    });
+    setTimeout(() => {
+      header.textContent = originalText;
+      header.style.color = '';
+    }, 1500);
   }
 }
 
