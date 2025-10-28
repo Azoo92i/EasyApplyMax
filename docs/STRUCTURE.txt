@@ -1,0 +1,156 @@
+════════════════════════════════════════════════════════════════
+    LINKEDIN AUTO APPLY v1.1.0 - STRUCTURE DU PROJET
+════════════════════════════════════════════════════════════════
+
+📦 C:\ExtensionAutojob\
+│
+├─── 🔧 FICHIERS PRINCIPAUX DE L'EXTENSION
+│    ├── manifest.json (817 B) ................. Configuration extension
+│    ├── popup.html (3.5 KB) ................... Interface utilisateur
+│    ├── popup.css (2.4 KB) .................... Styles interface
+│    ├── popup.js (5.9 KB) ..................... Logique popup
+│    ├── content.js (15 KB) .................... Script automatisation
+│    └── background.js (952 B) ................. Service worker
+│
+├─── 🎨 ICÔNES
+│    ├── icons/icon16.png (214 B) .............. 16x16 pixels
+│    ├── icons/icon48.png (683 B) .............. 48x48 pixels
+│    ├── icons/icon128.png (1.7 KB) ............ 128x128 pixels
+│    └── icons/create_icons.md ................. Guide création icônes
+│
+├─── 🧪 TESTS
+│    └── test/test.html ........................ Page de test complète
+│                                                  - Tests formulaires
+│                                                  - Tests blacklist
+│                                                  - Simulation Easy Apply
+│
+└─── 📚 DOCUMENTATION
+     ├── START_HERE.md (9.2 KB) ............... 👈 COMMENCEZ ICI!
+     ├── LISEZMOI.txt (3.9 KB) ................. Instructions rapides
+     ├── QUICK_START.md (1.7 KB) ............... Guide 3 minutes
+     ├── NOUVELLES_FONCTIONNALITES.md (6.1 KB) . Détails v1.1.0
+     ├── VERSION_1.1.0_RESUME.md (5.1 KB) ...... Résumé technique
+     ├── GUIDE_INSTALLATION.md (7.8 KB) ........ Guide complet
+     ├── README.md (5.5 KB) .................... Doc technique
+     └── CHANGELOG.md (4.8 KB) ................. Historique versions
+
+════════════════════════════════════════════════════════════════
+    FONCTIONNALITÉS v1.1.0
+════════════════════════════════════════════════════════════════
+
+✅ Automatisation Easy Apply
+✅ Remplissage automatique formulaires
+✅ Simulation comportement humain
+✅ 🆕 Blacklist de mots-clés (stage, alternance, junior...)
+✅ 🆕 Enchaînement automatique des pages
+✅ 🆕 Limite de candidatures (max 50/jour)
+✅ 🆕 Compteur jobs ignorés
+✅ Interface utilisateur complète
+✅ Logs en temps réel
+✅ Sauvegarde configuration
+✅ Page de test complète
+
+════════════════════════════════════════════════════════════════
+    INSTALLATION RAPIDE
+════════════════════════════════════════════════════════════════
+
+1. Chrome → chrome://extensions/
+2. Activer "Mode développeur"
+3. "Charger l'extension non empaquetée"
+4. Sélectionner: C:\ExtensionAutojob
+
+Si déjà installée:
+→ chrome://extensions/ → Trouver extension → Cliquer ↻
+
+════════════════════════════════════════════════════════════════
+    CONFIGURATION RECOMMANDÉE
+════════════════════════════════════════════════════════════════
+
+📝 Infos personnelles: (obligatoire)
+   • Prénom, Nom, Email, Téléphone
+
+🚫 Blacklist: (recommandé)
+   stage, alternance, junior, apprentissage, cdd, intérim
+
+🎯 Options:
+   • Max candidatures: 50
+   • [✓] Passer automatiquement à la page suivante
+   • [✓] Suivre les entreprises
+
+════════════════════════════════════════════════════════════════
+    TEST EN 1 MINUTE
+════════════════════════════════════════════════════════════════
+
+1. file:///C:/ExtensionAutojob/test/test.html
+2. Blacklist: stage, alternance, junior
+3. Max: 3
+4. Démarrer
+5. F12 pour voir logs
+
+Résultat: 2 jobs ignorés + 3 candidatures + arrêt auto
+
+════════════════════════════════════════════════════════════════
+    LOGS ATTENDUS (Console F12)
+════════════════════════════════════════════════════════════════
+
+[LinkedIn Auto Apply] Content script chargé et prêt
+[LinkedIn Auto Apply] Blacklist activée avec 3 mot(s): stage...
+[LinkedIn Auto Apply] Automatisation démarrée (max: 3)
+[LinkedIn Auto Apply] Job ignoré (blacklist: "stage"): ...
+[LinkedIn Auto Apply] Job ignoré (blacklist: "alternance"): ...
+[LinkedIn Auto Apply] Candidature soumise avec succès! Total: 1
+[LinkedIn Auto Apply] Limite atteinte (3). Arrêt automatique.
+[LinkedIn Auto Apply] Boucle principale arrêtée
+
+════════════════════════════════════════════════════════════════
+    FICHIERS À LIRE SELON VOTRE BESOIN
+════════════════════════════════════════════════════════════════
+
+🚀 Installation rapide:
+   → START_HERE.md (vous guide étape par étape)
+   → LISEZMOI.txt (instructions simples)
+
+📖 Utilisation complète:
+   → QUICK_START.md (guide 3 minutes)
+   → GUIDE_INSTALLATION.md (guide détaillé avec tests)
+
+🆕 Nouvelles fonctionnalités:
+   → NOUVELLES_FONCTIONNALITES.md (détails v1.1.0)
+   → VERSION_1.1.0_RESUME.md (résumé technique)
+
+🔧 Technique:
+   → README.md (documentation complète)
+   → CHANGELOG.md (historique des versions)
+
+════════════════════════════════════════════════════════════════
+    SUPPORT & DÉPANNAGE
+════════════════════════════════════════════════════════════════
+
+Extension n'apparaît pas:
+→ chrome://extensions/ → Rechargez ↻
+
+Nouvelles options invisibles:
+→ Rechargez l'extension
+
+Blacklist ne fonctionne pas:
+→ Vérifiez sauvegarde
+→ Format: stage, alternance (virgules)
+
+Console pour debug:
+→ F12 sur LinkedIn
+→ Cherchez [LinkedIn Auto Apply]
+
+════════════════════════════════════════════════════════════════
+    PROCHAINES ÉTAPES
+════════════════════════════════════════════════════════════════
+
+1. ✅ Recharger l'extension (si déjà installée)
+2. ✅ Lire START_HERE.md
+3. ✅ Tester avec test.html
+4. ✅ Configurer selon vos besoins
+5. ✅ Tester sur LinkedIn (max 2-3 d'abord)
+6. ✅ Utiliser normalement (max 50)
+
+════════════════════════════════════════════════════════════════
+    BONNE CHANCE DANS VOTRE RECHERCHE D'EMPLOI! 🎯💼🚀
+════════════════════════════════════════════════════════════════

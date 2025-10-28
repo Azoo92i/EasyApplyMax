@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EasyApplyMax</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M9 11V17M9 9V9.01M15 17V13.5C15 12.1193 13.8807 11 12.5 11C11.1193 11 10 12.1193 10 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h1>EasyApplyMax</h1>
+      </div>
+      <span class="version">v1.0.0</span>
+    </div>
+
+    <!-- Status Card -->
+    <div class="status-card">
+      <div class="status-item">
+        <span class="status-label">Status</span>
+        <span id="status" class="status-value stopped">Stopped</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Applied</span>
+        <span id="applied-count" class="status-number">0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Skipped</span>
+        <span id="skipped-count" class="status-number">0</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="personal">Personal Info</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </div>
+
+    <!-- Personal Info Tab -->
+    <div id="personal-tab" class="tab-content active">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="firstName" placeholder="John">
+        </div>
+
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="lastName" placeholder="Doe">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="john.doe@example.com">
+      </div>
+
+      <div class="form-row phone-row">
+        <div class="form-group">
+          <label>Country Code</label>
+          <select id="phoneCountryCode">
+            <option value="+1">USA/Canada (+1)</option>
+            <option value="+33">France (+33)</option>
+            <option value="+44">UK (+44)</option>
+            <option value="+49">Germany (+49)</option>
+            <option value="+34">Spain (+34)</option>
+            <option value="+39">Italy (+39)</option>
+            <option value="+32">Belgium (+32)</option>
+            <option value="+41">Switzerland (+41)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="1234567890">
+          <small>Without country code or leading zero</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" id="city" placeholder="New York, NY">
+      </div>
+
+      <div class="form-group">
+        <label>Years of Experience</label>
+        <input type="number" id="yearsOfExperience" placeholder="2" value="2">
+        <small>Default answer for "How many years of experience..." questions</small>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <div class="form-group">
+        <label>Blacklist Keywords</label>
+        <input type="text" id="blacklistKeywords" placeholder="internship, junior, entry-level, stage, alternance">
+        <small>Comma-separated. Jobs containing these words will be skipped</small>
+      </div>
+
+      <div class="form-group">
+        <label>Max Years of Experience Required</label>
+        <input type="number" id="maxYearsRequired" placeholder="3" min="0" max="20" value="3">
+        <small>Skip jobs requiring more years (e.g., "8+ years required" will be skipped if max is 3)</small>
+      </div>
+
+      <div class="form-group">
+        <label>Max Applications</label>
+        <input type="number" id="maxApplications" placeholder="50" min="1" max="100" value="50">
+        <small>LinkedIn limits ~50 Easy Apply per day</small>
+      </div>
+
+      <div class="toggle-group">
+        <label class="toggle">
+          <input type="checkbox" id="autoNextPage" checked>
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Auto next page</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button id="save-btn" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 3V8H15" stroke="currentColor" stroke-width="2"/>
+          <path d="M7 21V13H17V21" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        Save Config
+      </button>
+      <button id="start-btn" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 3L19 12L5 21V3Z" fill="currentColor"/>
+        </svg>
+        Start
+      </button>
+      <button id="stop-btn" class="btn btn-danger" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="12" height="12" fill="currentColor"/>
+        </svg>
+        Stop
+      </button>
+    </div>
+
+    <!-- Export Section -->
+    <div class="export-section">
+      <button id="export-csv-btn" class="btn btn-export">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Export Applied Jobs (CSV)
+      </button>
+      <button id="reset-counters-btn" class="btn btn-reset">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M3 21v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Reset Counters
+      </button>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <details>
+        <summary>📖 How to use</summary>
+        <ol>
+          <li>Go to LinkedIn and activate <strong>Easy Apply filter</strong></li>
+          <li>Fill in your personal information above</li>
+          <li>Click <strong>Save Config</strong></li>
+          <li>Click <strong>Start</strong> to begin auto-applying</li>
+          <li>Open Browser Console (F12) to see detailed logs</li>
+        </ol>
+      </details>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <small>Press F12 to open Console for detailed logs</small>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

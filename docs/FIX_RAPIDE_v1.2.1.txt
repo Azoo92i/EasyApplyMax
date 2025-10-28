@@ -1,0 +1,61 @@
+════════════════════════════════════════════════════════════════
+    🔧 FIX RAPIDE v1.2.1 - Erreur "Connection"
+════════════════════════════════════════════════════════════════
+
+❌ ERREUR VUE:
+"Could not establish connection. Receiving end does not exist."
+
+✅ SOLUTION EN 3 ÉTAPES (30 SECONDES):
+════════════════════════════════════════════════════════════════
+
+1. RECHARGEZ L'EXTENSION
+   chrome://extensions/ → Cliquez ↻ sur "LinkedIn Auto Apply"
+
+2. RECHARGEZ LINKEDIN
+   F5 ou Ctrl+R sur la page LinkedIn
+
+3. VÉRIFIEZ LA CONSOLE
+   F12 → Console → Cherchez:
+   [LinkedIn Auto Apply] Content script chargé et prêt
+
+════════════════════════════════════════════════════════════════
+    📝 CE QUI A ÉTÉ CORRIGÉ v1.2.1
+════════════════════════════════════════════════════════════════
+
+✅ Gestion d'erreur dans popup.js
+   → Message clair: "Rechargez la page LinkedIn (F5)"
+
+✅ Try-catch dans content.js
+   → Pas de crash si popup fermé
+
+✅ Instructions à l'utilisateur
+   → Plus de messages cryptiques
+
+════════════════════════════════════════════════════════════════
+    🎯 ORDRE CORRECT
+════════════════════════════════════════════════════════════════
+
+1. Installer/Mettre à jour extension
+2. Recharger extension (chrome://extensions/ → ↻)
+3. Aller sur LinkedIn
+4. F5 (IMPORTANT!)
+5. F12 → Vérifier console
+6. Ouvrir popup extension
+7. Démarrer
+
+⚠️ NE PAS ouvrir le popup AVANT de recharger LinkedIn!
+
+════════════════════════════════════════════════════════════════
+    ✅ MAINTENANT VOUS VERREZ
+════════════════════════════════════════════════════════════════
+
+SI OUBLI DE RECHARGER:
+→ Message clair dans popup:
+  "Erreur: Could not establish connection.
+   Rechargez la page LinkedIn (F5)"
+
+PLUS DE CRASH!
+
+════════════════════════════════════════════════════════════════
+Version: 1.2.1 | Fix: Gestion erreurs communication
+════════════════════════════════════════════════════════════════

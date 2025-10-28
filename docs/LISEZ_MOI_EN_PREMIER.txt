@@ -1,0 +1,86 @@
+════════════════════════════════════════════════════════════════
+    EXTENSION CHROME - LINKEDIN AUTO APPLY
+    Version 1.0.0 - Prête à l'emploi
+════════════════════════════════════════════════════════════════
+
+✅ L'extension est PRÊTE avec les icônes installées!
+
+📦 INSTALLATION (3 étapes simples):
+──────────────────────────────────────────────────────────────
+
+1. Ouvrez Chrome et tapez: chrome://extensions/
+
+2. Activez "Mode développeur" (bouton en haut à droite)
+
+3. Cliquez "Charger l'extension non empaquetée"
+   → Sélectionnez ce dossier: C:\ExtensionAutojob
+
+4. ✅ Une icône bleue "LA" apparaît dans Chrome!
+
+
+⚙️ CONFIGURATION (30 secondes):
+──────────────────────────────────────────────────────────────
+
+1. Cliquez sur l'icône bleue "LA" dans Chrome
+
+2. Remplissez vos informations personnelles
+   (déjà pré-remplies avec vos données)
+
+3. Cliquez "Sauvegarder la configuration"
+
+
+🧪 TEST RAPIDE:
+──────────────────────────────────────────────────────────────
+
+Ouvrez ce fichier dans Chrome:
+file:///C:/ExtensionAutojob/test/test.html
+
+Cliquez sur l'extension → "Démarrer"
+Les formulaires doivent se remplir automatiquement!
+
+
+📚 DOCUMENTATION:
+──────────────────────────────────────────────────────────────
+
+→ QUICK_START.md          = Guide rapide (3 min)
+→ GUIDE_INSTALLATION.md   = Guide complet avec tests
+→ README.md               = Documentation technique complète
+
+
+⚠️ IMPORTANT:
+──────────────────────────────────────────────────────────────
+
+• Testez d'abord avec test.html avant LinkedIn
+• Utilisez avec MODÉRATION (max 50 candidatures/jour)
+• Vérifiez vos candidatures après utilisation
+• LinkedIn peut détecter l'automatisation
+
+
+🎯 FICHIERS DE L'EXTENSION:
+──────────────────────────────────────────────────────────────
+
+✅ manifest.json          - Configuration
+✅ popup.html/css/js      - Interface utilisateur
+✅ content.js             - Automatisation LinkedIn
+✅ background.js          - Service worker
+✅ icons/                 - Icônes (16, 48, 128px)
+✅ test/test.html         - Page de test
+
+
+🆘 PROBLÈME?
+──────────────────────────────────────────────────────────────
+
+Extension ne s'affiche pas?
+→ Rechargez dans chrome://extensions/
+
+Formulaires ne se remplissent pas?
+→ Vérifiez la configuration
+→ Appuyez F12 pour voir les logs
+
+Besoin d'aide?
+→ Lisez GUIDE_INSTALLATION.md
+
+
+════════════════════════════════════════════════════════════════
+    TOUT EST PRÊT! Bonne chance dans votre recherche! 🚀
+════════════════════════════════════════════════════════════════
