@@ -240,18 +240,6 @@ body {
   transform: translateY(-1px);
 }
 
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40%;
-  height: 3px;
-  background: white;
-  border-radius: 2px 2px 0 0;
-}
-
 /* ============================================
    TAB CONTENT
    ============================================ */
