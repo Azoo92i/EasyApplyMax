@@ -49,10 +49,31 @@ async function loadConfig() {
   document.getElementById('blacklistKeywords').value = config.blacklistKeywords || '';
   document.getElementById('maxApplications').value = config.maxApplications || '50';
   document.getElementById('autoNextPage').checked = config.autoNextPage !== false;
+
+  // Setup auto-save on all fields
+  setupAutoSave();
 }
 
-// Save configuration
-document.getElementById('save-btn').addEventListener('click', async () => {
+// Auto-save indicator
+let saveTimeout;
+function showAutoSaveIndicator(saving = false) {
+  const indicator = document.getElementById('autosave-indicator');
+  indicator.classList.remove('show', 'saving');
+
+  if (saving) {
+    indicator.classList.add('saving', 'show');
+    indicator.querySelector('span').textContent = 'Saving...';
+  } else {
+    indicator.classList.add('show');
+    indicator.querySelector('span').textContent = 'Saved';
+    setTimeout(() => {
+      indicator.classList.remove('show');
+    }, 2000);
+  }
+}
+
+// Auto-save configuration
+async function saveConfig() {
   const config = {
     firstName: document.getElementById('firstName').value,
     lastName: document.getElementById('lastName').value,
@@ -67,21 +88,39 @@ document.getElementById('save-btn').addEventListener('click', async () => {
     autoNextPage: document.getElementById('autoNextPage').checked
   };
 
+  showAutoSaveIndicator(true);
   await chrome.storage.sync.set(config);
+  showAutoSaveIndicator(false);
+}
 
-  // Visual feedback
-  const btn = document.getElementById('save-btn');
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '✓ Saved!';
-  btn.style.background = '#10b981';
-  btn.style.color = 'white';
+// Setup auto-save on all form fields
+function setupAutoSave() {
+  const inputFields = [
+    'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
+    'city', 'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications'
+  ];
 
-  setTimeout(() => {
-    btn.innerHTML = originalText;
-    btn.style.background = '';
-    btn.style.color = '';
-  }, 2000);
-});
+  inputFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      field.addEventListener('input', () => {
+        // Debounce: wait 500ms after user stops typing
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          saveConfig();
+        }, 500);
+      });
+    }
+  });
+
+  // For checkbox, save immediately
+  const checkbox = document.getElementById('autoNextPage');
+  if (checkbox) {
+    checkbox.addEventListener('change', () => {
+      saveConfig();
+    });
+  }
+}
 
 // Start automation
 document.getElementById('start-btn').addEventListener('click', async () => {
