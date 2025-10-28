@@ -204,40 +204,55 @@ body {
 }
 
 /* ============================================
-   TABS - Modern Pill Style with Strong Contrast
+   TABS - Modern with Strong Visibility
    ============================================ */
 .tabs {
   display: flex;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-5);
-  background: var(--bg-secondary);
+  padding: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-4);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .tab {
   flex: 1;
-  padding: var(--space-3) var(--space-3);
-  border: none;
+  padding: var(--space-3) var(--space-4);
   background: transparent;
-  cursor: pointer;
+  border: 2px solid transparent;
+  color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 500;
-  color: rgba(71, 85, 105, 0.6);
-  border-radius: var(--radius-md);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  cursor: pointer;
   position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-md);
+  text-align: center;
 }
 
-.tab:hover {
-  background: rgba(10, 102, 194, 0.1);
+.tab:hover:not(.active) {
   color: var(--primary);
+  background: rgba(10, 102, 194, 0.08);
+  border-color: rgba(10, 102, 194, 0.2);
+  transform: translateY(-1px);
 }
 
 .tab.active {
-  background: linear-gradient(135deg, var(--primary) 0%, #0056b3 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(10, 102, 194, 0.35);
-  font-weight: 700;
-  transform: translateY(-1px);
+  background: var(--primary-gradient);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(10, 102, 194, 0.3);
+  transform: translateY(-2px);
+}
+
+.tab.active::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent);
+  border-radius: var(--radius-md);
+  pointer-events: none;
 }
 
 /* ============================================
@@ -389,6 +404,49 @@ small {
   color: var(--text-primary);
   font-weight: 500;
   flex: 1;
+}
+
+/* ============================================
+   AUTO-SAVE INDICATOR
+   ============================================ */
+.autosave-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  margin: 0 var(--space-5) var(--space-3);
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.autosave-indicator.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.autosave-indicator svg {
+  flex-shrink: 0;
+}
+
+.autosave-indicator.saving {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+}
+
+.autosave-indicator.saving svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ============================================
