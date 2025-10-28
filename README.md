@@ -39,20 +39,47 @@ A powerful Chrome extension that automates LinkedIn Easy Apply job applications 
 
 ## 💬 Community & Support
 
+<div align="center">
+
+### 🌟 This is a Community-Driven Project!
+
+We're building EasyApplyMax together with job seekers worldwide. Join us to:
+- 💡 **Suggest features** you want to see
+- 🐛 **Report bugs** and help improve stability
+- 🤝 **Get support** from the community
+- 🎯 **Share tips** and best practices
+- 🚀 **Stay updated** on new AI-powered features
+
+</div>
+
 <table>
 <tr>
-<td>
+<td align="center" width="50%">
 
-### 💬 Join our Discord
-Get help, share feedback, and stay updated on new features!
+### 💬 Discord Community
+**Your main hub for everything EasyApplyMax**
 
-**[Join Discord Community →](https://discord.gg/xWaCXBZbws)**
+Get instant help, discuss features, and connect with other users actively using the tool.
+
+<a href="https://discord.gg/xWaCXBZbws">
+  <img src="https://img.shields.io/badge/Join-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Discord">
+</a>
+
+**[📱 Join Now →](https://discord.gg/xWaCXBZbws)**
 
 </td>
-<td>
+<td align="center" width="50%">
 
-### 🐦 Follow on Twitter
-Follow [@Azo92i](https://twitter.com/Azo92i) for updates and announcements!
+### 🐦 Twitter Updates
+**Follow for announcements & tips**
+
+Stay in the loop with new releases, feature updates, and job search automation tips.
+
+<a href="https://twitter.com/Azo92i">
+  <img src="https://img.shields.io/badge/Follow-@Azo92i-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Follow on Twitter">
+</a>
+
+**[🔔 Follow @Azo92i →](https://twitter.com/Azo92i)**
 
 </td>
 </tr>

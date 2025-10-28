@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate EasyApplyMax Icons</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #0A66C2;
+    }
+    canvas {
+      border: 2px solid #ddd;
+      margin: 10px;
+      border-radius: 8px;
+    }
+    .preview {
+      display: flex;
+      gap: 20px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    button {
+      background: #0A66C2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover {
+      background: #004182;
+    }
+    .info {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #0A66C2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 EasyApplyMax Icon Generator</h1>
+
+    <div class="info">
+      <strong>Icon Design:</strong> Robot + Lightning + Document forms = Auto-apply automation<br>
+      LinkedIn blue (#0A66C2) with yellow accent (#FFC107)
+    </div>
+
+    <div class="preview">
+      <div>
+        <h3>16x16</h3>
+        <canvas id="canvas16" width="16" height="16"></canvas>
+      </div>
+      <div>
+        <h3>48x48</h3>
+        <canvas id="canvas48" width="48" height="48"></canvas>
+      </div>
+      <div>
+        <h3>128x128</h3>
+        <canvas id="canvas128" width="128" height="128"></canvas>
+      </div>
+    </div>
+
+    <button onclick="downloadAll()">📥 Download All Icons</button>
+    <button onclick="downloadIcon(16)">Download 16x16</button>
+    <button onclick="downloadIcon(48)">Download 48x48</button>
+    <button onclick="downloadIcon(128)">Download 128x128</button>
+  </div>
+
+  <script>
+    function drawIcon(ctx, size) {
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+
+      // Background circle with gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#0A66C2');
+      gradient.addColorStop(1, '#004182');
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      const scale = size / 128; // Scale factor
+
+      // Robot head
+      ctx.fillStyle = 'white';
+      ctx.fillRect(44*scale, 40*scale, 40*scale, 36*scale);
+
+      // Round corners for robot head (simplified for small sizes)
+      if (size >= 48) {
+        ctx.clearRect(44*scale, 40*scale, 40*scale, 36*scale);
+        ctx.beginPath();
+        ctx.roundRect(44*scale, 40*scale, 40*scale, 36*scale, 8*scale);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+      }
+
+      // Eyes
+      ctx.fillStyle = '#0A66C2';
+      ctx.beginPath();
+      ctx.arc(54*scale, 52*scale, 4*scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(74*scale, 52*scale, 4*scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Smile
+      if (size >= 48) {
+        ctx.strokeStyle = '#0A66C2';
+        ctx.lineWidth = 2*scale;
+        ctx.beginPath();
+        ctx.moveTo(54*scale, 66*scale);
+        ctx.quadraticCurveTo(64*scale, 70*scale, 74*scale, 66*scale);
+        ctx.stroke();
+      }
+
+      // Antenna
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 3*scale;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(64*scale, 40*scale);
+      ctx.lineTo(64*scale, 32*scale);
+      ctx.stroke();
+
+      // Antenna dot
+      ctx.fillStyle = '#FFC107';
+      ctx.beginPath();
+      ctx.arc(64*scale, 30*scale, 3*scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Document lines (simplified for small sizes)
+      if (size >= 48) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillRect(35*scale, 82*scale, 58*scale, 8*scale);
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillRect(35*scale, 92*scale, 45*scale, 4*scale);
+        ctx.fillRect(35*scale, 98*scale, 52*scale, 4*scale);
+      }
+
+      // Lightning bolt (auto/fast indicator)
+      ctx.fillStyle = '#FFC107';
+      ctx.beginPath();
+      ctx.moveTo(102*scale, 50*scale);
+      ctx.lineTo(95*scale, 60*scale);
+      ctx.lineTo(100*scale, 60*scale);
+      ctx.lineTo(93*scale, 72*scale);
+      ctx.lineTo(102*scale, 60*scale);
+      ctx.lineTo(97*scale, 60*scale);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Draw icons on load
+    window.onload = function() {
+      const sizes = [16, 48, 128];
+      sizes.forEach(size => {
+        const canvas = document.getElementById(`canvas${size}`);
+        const ctx = canvas.getContext('2d');
+        drawIcon(ctx, size);
+      });
+    };
+
+    function downloadIcon(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const link = document.createElement('a');
+      link.download = `icon${size}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function downloadAll() {
+      [16, 48, 128].forEach(size => {
+        setTimeout(() => downloadIcon(size), size * 2);
+      });
+    }
+  </script>
+</body>
+</html>
