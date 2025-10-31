@@ -407,6 +407,76 @@ small {
 }
 
 /* ============================================
+   FILE UPLOAD
+   ============================================ */
+.file-upload-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.btn-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #e8f4f8 0%, #d4e9f2 100%);
+  color: var(--primary);
+  border: 1px solid rgba(10, 102, 194, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-upload:hover {
+  background: linear-gradient(135deg, #d4e9f2 0%, #c0dfe9 100%);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.btn-upload svg {
+  flex-shrink: 0;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-name.has-file {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.btn-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove:hover {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  transform: scale(1.1);
+}
+
+/* ============================================
    AUTO-SAVE INDICATOR
    ============================================ */
 .autosave-indicator {

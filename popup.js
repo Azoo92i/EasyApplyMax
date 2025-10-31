@@ -38,6 +38,9 @@ async function loadConfig() {
     'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications', 'autoNextPage'
   ]);
 
+  // Load from local storage for larger data (resume)
+  const local = await chrome.storage.local.get(['resumeFile', 'resumeFileName']);
+
   document.getElementById('firstName').value = config.firstName || '';
   document.getElementById('lastName').value = config.lastName || '';
   document.getElementById('email').value = config.email || '';
@@ -50,8 +53,16 @@ async function loadConfig() {
   document.getElementById('maxApplications').value = config.maxApplications || '50';
   document.getElementById('autoNextPage').checked = config.autoNextPage !== false;
 
+  // Load resume if exists
+  if (local.resumeFileName) {
+    document.getElementById('resumeFileName').textContent = local.resumeFileName;
+    document.getElementById('resumeFileName').classList.add('has-file');
+    document.getElementById('removeResumeBtn').style.display = 'inline-flex';
+  }
+
   // Setup auto-save on all fields
   setupAutoSave();
+  setupResumeUpload();
 }
 
 // Auto-save indicator
@@ -127,6 +138,18 @@ document.getElementById('start-btn').addEventListener('click', async () => {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
+    // Check if we're on LinkedIn
+    if (!tab.url || !tab.url.includes('linkedin.com')) {
+      alert('⚠️ Please open a LinkedIn job search page first!\n\nExample: linkedin.com/jobs/search/');
+      return;
+    }
+
+    // Check if on job search page
+    if (!tab.url.includes('/jobs/')) {
+      alert('⚠️ Please navigate to LinkedIn Jobs page first!\n\nGo to: linkedin.com/jobs/search/');
+      return;
+    }
+
     // Send message and wait for response
     const response = await chrome.tabs.sendMessage(tab.id, { action: 'start' });
 
@@ -139,7 +162,13 @@ document.getElementById('start-btn').addEventListener('click', async () => {
     await loadRunningState();
   } catch (error) {
     console.error('Start error:', error);
-    alert('Error: Please reload LinkedIn page (F5) and try again');
+
+    // More specific error messages
+    if (error.message && error.message.includes('Receiving end does not exist')) {
+      alert('⚠️ Content script not loaded!\n\nPlease:\n1. Reload the LinkedIn page (F5)\n2. Make sure you are on linkedin.com/jobs/search/\n3. Try starting the bot again');
+    } else {
+      alert('Error starting bot: ' + error.message + '\n\nPlease reload LinkedIn page (F5) and try again');
+    }
   }
 });
 
@@ -147,6 +176,15 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 document.getElementById('stop-btn').addEventListener('click', async () => {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    // Check if we're on LinkedIn
+    if (!tab.url || !tab.url.includes('linkedin.com')) {
+      // If not on LinkedIn, just update local state
+      await chrome.storage.local.set({ isRunning: false });
+      await loadRunningState();
+      console.log('Bot stopped (not on LinkedIn page)');
+      return;
+    }
 
     // Send message and wait for response
     const response = await chrome.tabs.sendMessage(tab.id, { action: 'stop' });
@@ -160,6 +198,11 @@ document.getElementById('stop-btn').addEventListener('click', async () => {
     await loadRunningState();
   } catch (error) {
     console.error('Stop error:', error);
+
+    // Even if error, try to stop by updating storage directly
+    await chrome.storage.local.set({ isRunning: false });
+    await loadRunningState();
+    console.log('Bot stopped (via storage fallback)');
   }
 });
 
@@ -213,16 +256,17 @@ setInterval(async () => {
 // Export jobs to CSV
 document.getElementById('export-csv-btn').addEventListener('click', async () => {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const response = await chrome.tabs.sendMessage(tab.id, { action: 'exportJobs' });
+    // Read directly from storage instead of content script
+    const local = await chrome.storage.local.get(['appliedJobs']);
+    const jobs = local.appliedJobs || [];
 
-    if (!response || !response.jobs || response.jobs.length === 0) {
+    if (jobs.length === 0) {
       alert('No jobs applied yet. Start the bot first!');
       return;
     }
 
     // Convert to CSV
-    const csvContent = convertToCSV(response.jobs);
+    const csvContent = convertToCSV(jobs);
 
     // Download CSV
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -236,7 +280,7 @@ document.getElementById('export-csv-btn').addEventListener('click', async () => 
     // Visual feedback
     const btn = document.getElementById('export-csv-btn');
     const originalHTML = btn.innerHTML;
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Exported ${response.jobs.length} jobs!`;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Exported ${jobs.length} jobs!`;
     btn.style.background = '#059669';
 
     setTimeout(() => {
@@ -244,7 +288,8 @@ document.getElementById('export-csv-btn').addEventListener('click', async () => 
       btn.style.background = '';
     }, 3000);
   } catch (error) {
-    alert('Error exporting jobs. Make sure you are on a LinkedIn page.');
+    console.error('Export error:', error);
+    alert('Error exporting jobs: ' + error.message);
   }
 });
 
@@ -253,8 +298,23 @@ document.getElementById('reset-counters-btn').addEventListener('click', async ()
   if (!confirm('Reset all counters and clear applied jobs list?')) return;
 
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    await chrome.tabs.sendMessage(tab.id, { action: 'resetCounters' });
+    // Update storage directly - more reliable than messaging content script
+    await chrome.storage.local.set({
+      appliedCount: 0,
+      skippedCount: 0,
+      appliedJobs: []
+    });
+
+    // Also try to notify content script if it's running
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab.url && tab.url.includes('linkedin.com')) {
+        await chrome.tabs.sendMessage(tab.id, { action: 'resetCounters' });
+      }
+    } catch (e) {
+      // Content script not available, that's ok - we already updated storage
+      console.log('Content script not available, counters reset in storage only');
+    }
 
     // Update display
     document.getElementById('applied-count').textContent = '0';
@@ -385,3 +445,85 @@ document.getElementById('clear-applied-jobs')?.addEventListener('click', async (
     console.error('Error clearing applied jobs:', error);
   }
 });
+
+// Resume upload functionality
+function setupResumeUpload() {
+  const fileInput = document.getElementById('resumeFile');
+  const uploadBtn = document.getElementById('uploadResumeBtn');
+  const fileName = document.getElementById('resumeFileName');
+  const removeBtn = document.getElementById('removeResumeBtn');
+
+  // Click upload button triggers file input
+  uploadBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // Handle file selection
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file size (max 5MB for Chrome Storage local)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File too large! Please upload a file smaller than 5MB.');
+      return;
+    }
+
+    // Check file type
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type! Please upload PDF, DOC, or DOCX files only.');
+      return;
+    }
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target.result;
+
+        // Save to Chrome storage local (larger quota than sync)
+        await chrome.storage.local.set({
+          resumeFile: base64,
+          resumeFileName: file.name,
+          resumeFileType: file.type
+        });
+
+        // Update UI
+        fileName.textContent = file.name;
+        fileName.classList.add('has-file');
+        removeBtn.style.display = 'inline-flex';
+
+        // Show saved indicator
+        showAutoSaveIndicator(false);
+
+        console.log('Resume uploaded successfully:', file.name);
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading resume:', error);
+      alert('Error uploading file. Please try again.');
+    }
+  });
+
+  // Handle remove button
+  removeBtn.addEventListener('click', async () => {
+    if (!confirm('Remove uploaded resume?')) return;
+
+    try {
+      // Remove from storage
+      await chrome.storage.local.remove(['resumeFile', 'resumeFileName', 'resumeFileType']);
+
+      // Reset UI
+      fileName.textContent = 'No file chosen';
+      fileName.classList.remove('has-file');
+      removeBtn.style.display = 'none';
+      fileInput.value = '';
+
+      console.log('Resume removed');
+    } catch (error) {
+      console.error('Error removing resume:', error);
+    }
+  });
+}

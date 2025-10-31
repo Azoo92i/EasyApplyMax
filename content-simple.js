@@ -8,6 +8,11 @@ let lastActivityTime = Date.now(); // Track last activity for stuck detection
 let lastJobIndex = -1; // Track last job processed
 const STUCK_TIMEOUT = 120000; // 2 minutes without activity = stuck
 
+// Resume/CV data for automatic upload
+let resumeFile = null; // Base64 data
+let resumeFileName = null;
+let resumeFileType = null;
+
 // Logs simples
 function log(msg) {
   console.log('[LinkedIn Bot]', msg);
@@ -50,8 +55,11 @@ function checkDailyLimit() {
       "Great effort applying today",
       "we limit daily submissions",
       "continue applying tomorrow",
+      "Save this job and continue applying tomorrow",
       "exceeded the daily application limit",
-      "reached today\\'s easy apply limit"
+      "reached today\\'s easy apply limit",
+      "daily Easy Apply limit",
+      "limit daily submissions"
     ];
 
     // Search in entire page text
@@ -390,6 +398,50 @@ function fill(input, value) {
   input.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+// Convert base64 to File object for resume upload
+function base64ToFile(base64String, filename, mimeType) {
+  try {
+    // Remove data URL prefix if present (e.g., "data:application/pdf;base64,")
+    const base64Data = base64String.includes(',') ? base64String.split(',')[1] : base64String;
+
+    // Convert base64 to binary
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Create File object
+    const file = new File([bytes], filename, { type: mimeType });
+    return file;
+  } catch (error) {
+    log(`❌ Error converting base64 to file: ${error.message}`);
+    return null;
+  }
+}
+
+// Fill file input with resume
+async function fillFileInput(fileInput, file) {
+  try {
+    // Create a DataTransfer object to set files
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    // Set the files property
+    fileInput.files = dataTransfer.files;
+
+    // Trigger change event
+    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+    log(`✅ Resume uploaded: ${file.name}`);
+    return true;
+  } catch (error) {
+    log(`❌ Error filling file input: ${error.message}`);
+    return false;
+  }
+}
+
 // BOUCLE PRINCIPALE - EXACTEMENT COMME PYTHON
 async function mainLoop() {
   log('Démarrage...');
@@ -509,6 +561,79 @@ async function mainLoop() {
 
         await click(easyApplyBtn);
         await wait(2000);
+
+        // CRITICAL: Check for daily limit immediately after clicking Easy Apply
+        // This catches the network error case where modal doesn't appear
+        if (checkDailyLimit()) {
+          log('');
+          log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          log('🚫 LINKEDIN DAILY LIMIT REACHED!');
+          log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          log('LinkedIn limits Easy Apply to ~50-100 per day');
+          log(`✅ Applied today: ${appliedCount}`);
+          log(`⏭️  Skipped today: ${skippedCount}`);
+          log('⏰ You can continue applying tomorrow!');
+          log('🛑 Bot stopped automatically');
+          log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          log('');
+
+          isRunning = false;
+          await chrome.storage.local.set({ isRunning: false });
+
+          try {
+            chrome.runtime.sendMessage({
+              type: 'updateStatus',
+              status: 'stopped',
+              message: 'Daily limit reached'
+            });
+          } catch (e) {
+            // Popup might be closed
+          }
+
+          break; // Exit job loop
+        }
+
+        // Verify that modal appeared (if not, might be limit reached)
+        const modalCheck = document.querySelector('.jobs-easy-apply-modal');
+        if (!modalCheck || modalCheck.offsetParent === null) {
+          log('⚠️ Easy Apply modal did not appear - checking for limit...');
+          await wait(2000); // Wait a bit more
+
+          if (checkDailyLimit()) {
+            log('');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            log('🚫 LINKEDIN DAILY LIMIT REACHED!');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            log('LinkedIn limits Easy Apply to ~50-100 per day');
+            log(`✅ Applied today: ${appliedCount}`);
+            log(`⏭️  Skipped today: ${skippedCount}`);
+            log('⏰ You can continue applying tomorrow!');
+            log('🛑 Bot stopped automatically');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            log('');
+
+            isRunning = false;
+            await chrome.storage.local.set({ isRunning: false });
+
+            try {
+              chrome.runtime.sendMessage({
+                type: 'updateStatus',
+                status: 'stopped',
+                message: 'Daily limit reached'
+              });
+            } catch (e) {
+              // Popup might be closed
+            }
+
+            break; // Exit job loop
+          }
+
+          // Modal still not there and no limit message - skip job
+          log('❌ Modal did not appear (unknown reason), skipping job');
+          skippedCount++;
+          updateSkippedCount();
+          continue;
+        }
 
         // Infos du job déjà extraites plus haut pour blacklist, on les réutilise
         const jobLink = job.querySelector('a')?.href || window.location.href;
@@ -714,7 +839,66 @@ async function mainLoop() {
             }
           }
 
-          // 2. CHECKBOXES (consent, terms, etc.)
+          // 2. FILE INPUTS (Resume/CV Upload)
+          if (resumeFile && resumeFileName && resumeFileType) {
+            const fileInputs = modal.querySelectorAll('input[type="file"]');
+
+            for (let fileInput of fileInputs) {
+              // Check if already has a file
+              if (fileInput.files && fileInput.files.length > 0) {
+                log(`⏭️ File input already has file: ${fileInput.files[0].name}`);
+                continue;
+              }
+
+              // Get label to understand what file is requested
+              let labelText = '';
+              labelText += ' ' + (fileInput.getAttribute('aria-label') || '');
+              labelText += ' ' + (fileInput.getAttribute('name') || '');
+
+              const inputId = fileInput.getAttribute('id');
+              if (inputId) {
+                const labelEl = modal.querySelector(`label[for="${inputId}"]`);
+                if (labelEl) labelText += ' ' + labelEl.textContent;
+              }
+
+              const parentLabel = fileInput.closest('label');
+              if (parentLabel) labelText += ' ' + parentLabel.textContent;
+
+              const label = labelText.toLowerCase();
+
+              // Check if it's asking for resume/CV (multilingual)
+              const isResumeInput = label.match(/resume|cv|curriculum|vitae|upload.*document|file/);
+
+              if (isResumeInput) {
+                log(`📎 File input detected: ${labelText.substring(0, 50)}`);
+
+                // Convert base64 to File object
+                const file = base64ToFile(resumeFile, resumeFileName, resumeFileType);
+
+                if (file) {
+                  const success = await fillFileInput(fileInput, file);
+
+                  if (success) {
+                    log(`✅ Resume uploaded successfully to form`);
+                    await wait(500); // Wait for LinkedIn to process the upload
+                  } else {
+                    log(`⚠️ Failed to upload resume to file input`);
+                  }
+                } else {
+                  log(`❌ Failed to convert resume to File object`);
+                }
+              } else {
+                log(`⏭️ Skipping file input (not resume): ${labelText.substring(0, 50)}`);
+              }
+            }
+          } else if (modal.querySelector('input[type="file"]')) {
+            // File input found but no resume uploaded
+            const fileInputsCount = modal.querySelectorAll('input[type="file"]').length;
+            log(`⚠️ ${fileInputsCount} file input(s) found but no resume uploaded in extension`);
+            log(`   Upload your resume in the extension popup to auto-fill file uploads`);
+          }
+
+          // 3. CHECKBOXES (consent, terms, etc.)
           const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
           for (let checkbox of checkboxes) {
             if (checkbox.id === 'follow-company-checkbox') continue; // Skip follow company (handled later)
@@ -733,7 +917,7 @@ async function mainLoop() {
             }
           }
 
-          // 3. RADIO BUTTONS (Python ligne 1037)
+          // 4. RADIO BUTTONS (Python ligne 1037)
           const radios = modal.querySelectorAll('fieldset[data-test-form-builder-radio-button-form-component]');
           for (let fieldset of radios) {
             const questionLabel = fieldset.querySelector('legend, span[class*="title"]');
@@ -766,7 +950,7 @@ async function mainLoop() {
             }
           }
 
-          // 3. DROPDOWN/SELECT (Python ligne 661)
+          // 5. DROPDOWN/SELECT (Python ligne 661)
           const selects = modal.querySelectorAll('select');
           for (let select of selects) {
             if (select.selectedIndex > 0) continue; // Skip si déjà sélectionné
@@ -835,7 +1019,7 @@ async function mainLoop() {
             }
           }
 
-          // 4. DROPDOWN CUSTOM LINKEDIN (Python ligne 668)
+          // 6. DROPDOWN CUSTOM LINKEDIN (Python ligne 668)
           const customDropdowns = modal.querySelectorAll('button[aria-haspopup="listbox"], button.artdeco-dropdown__trigger');
           for (let dropdown of customDropdowns) {
             // Get label/question text for smart selection
@@ -1122,24 +1306,86 @@ async function mainLoop() {
         }
       }
 
-      // Page suivante (Python ligne 2047)
-      log('Passage page suivante...');
+      // Check if bot was stopped during job processing (e.g., daily limit reached)
+      if (!isRunning) {
+        log('🛑 Bot stopped during job processing - Exiting main loop');
+        break; // Exit the while loop
+      }
+
+      // Page suivante (Python ligne 2047) - IMPROVED WITH FALLBACKS
+      log('🔍 Recherche page suivante...');
+      let nextPageClicked = false;
+
+      // METHOD 1: Try pagination by page number
       const pagination = document.querySelector('.jobs-search-pagination__pages');
       if (pagination) {
-        const activeBtn = pagination.querySelector('button.active');
+        const activeBtn = pagination.querySelector('button.active, button[aria-current="true"], li.active button, li.selected button');
         if (activeBtn) {
           const currentPage = parseInt(activeBtn.textContent);
-          const nextPageBtn = pagination.querySelector(`button[aria-label="Page ${currentPage + 1}"]`);
-          if (nextPageBtn) {
+          log(`📄 Page actuelle: ${currentPage}`);
+
+          // Try to find next page button
+          const nextPageBtn = pagination.querySelector(`button[aria-label="Page ${currentPage + 1}"]`) ||
+                             pagination.querySelector(`button[data-test-pagination-page-btn="${currentPage + 1}"]`);
+
+          if (nextPageBtn && nextPageBtn.offsetParent !== null) {
+            log(`✅ Clique sur page ${currentPage + 1}`);
             await click(nextPageBtn);
             await wait(3000);
-            continue;
+            nextPageClicked = true;
           }
         }
       }
 
-      log('Fin des pages');
-      break;
+      // METHOD 2: Try "Next" button (fallback)
+      if (!nextPageClicked) {
+        log('🔍 Recherche bouton "Next"...');
+        const nextButtons = Array.from(document.querySelectorAll('button, [role="button"]'));
+
+        for (let btn of nextButtons) {
+          if (!btn.offsetParent) continue; // Skip hidden
+
+          const btnText = btn.textContent.trim().toLowerCase();
+          const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
+
+          // Check for "Next" in multiple languages
+          if (btnText === 'next' || btnText === 'suivant' || btnText === 'siguiente' ||
+              ariaLabel.includes('next') || ariaLabel.includes('suivant')) {
+
+            // Make sure it's the pagination next, not a form next
+            const isPaginationNext = btn.closest('.jobs-search-pagination') ||
+                                    btn.closest('[class*="pagination"]') ||
+                                    btn.getAttribute('aria-label')?.includes('page');
+
+            if (isPaginationNext) {
+              log('✅ Clique sur bouton Next');
+              await click(btn);
+              await wait(3000);
+              nextPageClicked = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // METHOD 3: Try icon-based next button (LinkedIn uses icons)
+      if (!nextPageClicked) {
+        const iconNextBtn = document.querySelector('.jobs-search-pagination button[aria-label*="Next"], .jobs-search-pagination button svg[class*="chevron-right"]')?.closest('button');
+        if (iconNextBtn && iconNextBtn.offsetParent !== null && !iconNextBtn.disabled) {
+          log('✅ Clique sur bouton Next (icône)');
+          await click(iconNextBtn);
+          await wait(3000);
+          nextPageClicked = true;
+        }
+      }
+
+      if (nextPageClicked) {
+        log('✅ Passage à la page suivante réussi');
+        continue;
+      } else {
+        log('📋 Fin des pages - Aucune page suivante trouvée');
+        break;
+      }
 
     } catch (error) {
       log(`Erreur: ${error.message}`);
@@ -1328,10 +1574,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         ]);
 
         // Charger les compteurs depuis storage
-        const local = await chrome.storage.local.get(['appliedCount', 'skippedCount', 'appliedJobs']);
+        const local = await chrome.storage.local.get(['appliedCount', 'skippedCount', 'appliedJobs', 'resumeFile', 'resumeFileName', 'resumeFileType']);
         appliedCount = local.appliedCount || 0;
         skippedCount = local.skippedCount || 0;
         appliedJobs = local.appliedJobs || [];
+
+        // Load resume data if available
+        resumeFile = local.resumeFile || null;
+        resumeFileName = local.resumeFileName || null;
+        resumeFileType = local.resumeFileType || null;
+
+        if (resumeFile) {
+          log(`📄 Resume loaded: ${resumeFileName}`);
+        } else {
+          log('ℹ️ No resume uploaded - file upload fields will be skipped');
+        }
 
         log(`Config: ${config.firstName} ${config.lastName}, exp: ${config.yearsOfExperience || 2}, max required: ${config.maxYearsRequired || 3}`);
         log(`Counters: Applied ${appliedCount}, Skipped ${skippedCount}`);
@@ -1381,12 +1638,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-log('Script loaded v2.17.0 - FIXED: Start/Stop button state synchronization');
+log('Script loaded v2.19.0 - FIXED: Daily limit detection + CV Upload + Improved Pagination');
 
 // AUTO-RESTART: Check if bot was running before page refresh
 (async () => {
   try {
-    const state = await chrome.storage.local.get(['isRunning', 'appliedCount', 'skippedCount', 'appliedJobs']);
+    const state = await chrome.storage.local.get(['isRunning', 'appliedCount', 'skippedCount', 'appliedJobs', 'resumeFile', 'resumeFileName', 'resumeFileType']);
 
     if (state.isRunning === true) {
       log('🔄 AUTO-RESTART: Bot was running before refresh, restarting...');
@@ -1402,8 +1659,14 @@ log('Script loaded v2.17.0 - FIXED: Start/Stop button state synchronization');
       skippedCount = state.skippedCount || 0;
       appliedJobs = state.appliedJobs || [];
 
+      // Restore resume data
+      resumeFile = state.resumeFile || null;
+      resumeFileName = state.resumeFileName || null;
+      resumeFileType = state.resumeFileType || null;
+
       log(`✅ AUTO-RESTART: Restored state - Applied: ${appliedCount}, Skipped: ${skippedCount}`);
       log(`Config: ${config.firstName} ${config.lastName}`);
+      if (resumeFile) log(`📄 Resume: ${resumeFileName}`);
 
       // Restart bot
       isRunning = true;
