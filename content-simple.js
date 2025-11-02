@@ -444,7 +444,14 @@ async function fillFileInput(fileInput, file) {
 
 // BOUCLE PRINCIPALE - EXACTEMENT COMME PYTHON
 async function mainLoop() {
-  log('Démarrage...');
+  // SECURITY: Double-check that bot was explicitly started by user
+  if (!isRunning) {
+    log('⚠️ SECURITY: mainLoop called but isRunning=false - Aborting');
+    return;
+  }
+
+  log('🚀 Bot started by user - Beginning automation...');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   while (isRunning) {
     try {
@@ -452,12 +459,17 @@ async function mainLoop() {
       if (checkDailyLimit()) {
         log('⛔ Stopping bot: Daily limit reached');
         isRunning = false;
-        await chrome.storage.local.set({ isRunning: false });
-        chrome.runtime.sendMessage({
-          type: 'updateStatus',
-          status: 'stopped',
-          message: 'Daily limit reached'
-        });
+
+        // Notify popup
+        try {
+          chrome.runtime.sendMessage({
+            type: 'updateStatus',
+            status: 'stopped',
+            message: 'Daily limit reached'
+          });
+        } catch (e) {
+          // Popup may be closed
+        }
         break;
       }
 
@@ -578,7 +590,6 @@ async function mainLoop() {
           log('');
 
           isRunning = false;
-          await chrome.storage.local.set({ isRunning: false });
 
           try {
             chrome.runtime.sendMessage({
@@ -613,7 +624,7 @@ async function mainLoop() {
             log('');
 
             isRunning = false;
-            await chrome.storage.local.set({ isRunning: false });
+            // isRunning flag is now in-memory only (not persisted for security)
 
             try {
               chrome.runtime.sendMessage({
@@ -1236,7 +1247,7 @@ async function mainLoop() {
               log(`🎯 MAX APPLICATIONS REACHED: ${appliedCount}/${maxApps}`);
               log('🛑 Stopping bot automatically...');
               isRunning = false;
-              await chrome.storage.local.set({ isRunning: false });
+              // isRunning flag is now in-memory only (not persisted for security)
 
               // Notify popup that bot stopped
               try {
@@ -1592,11 +1603,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         log(`Config: ${config.firstName} ${config.lastName}, exp: ${config.yearsOfExperience || 2}, max required: ${config.maxYearsRequired || 3}`);
         log(`Counters: Applied ${appliedCount}, Skipped ${skippedCount}`);
-        isRunning = true;
 
-        // Persist isRunning state pour survire au refresh
-        await chrome.storage.local.set({ isRunning: true });
-        log('✅ Bot started - State persisted');
+        // SECURITY: Set isRunning flag (in memory only, not persisted)
+        // This ensures bot stops on page refresh and requires manual restart
+        isRunning = true;
+        log('✅ Bot started by user - Running in memory only');
+        log('⚠️ Bot will stop if page is refreshed - this is a security feature');
 
         // Send response before starting main loop
         sendResponse({ success: true, message: 'Bot started' });
@@ -1605,10 +1617,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         mainLoop();
       } else if (request.action === 'stop') {
         isRunning = false;
-
-        // Clear isRunning state
-        await chrome.storage.local.set({ isRunning: false });
-        log('⏸️ Bot stopped - State cleared');
+        log('⏸️ Bot stopped by user');
 
         sendResponse({ success: true, message: 'Bot stopped' });
       } else if (request.action === 'exportJobs') {
@@ -1638,49 +1647,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-log('Script loaded v2.19.0 - FIXED: Daily limit detection + CV Upload + Improved Pagination');
+log('Script loaded v2.20.0 - SECURITY: Auto-restart disabled, manual start only');
 
-// AUTO-RESTART: Check if bot was running before page refresh
+// SECURITY: Clear running state on page load to prevent auto-start
+// Bot will ONLY start when user explicitly clicks "Start" button
 (async () => {
   try {
-    const state = await chrome.storage.local.get(['isRunning', 'appliedCount', 'skippedCount', 'appliedJobs', 'resumeFile', 'resumeFileName', 'resumeFileType']);
+    // Clear isRunning flag to prevent any auto-start behavior
+    await chrome.storage.local.set({ isRunning: false });
 
-    if (state.isRunning === true) {
-      log('🔄 AUTO-RESTART: Bot was running before refresh, restarting...');
+    // Load counters and state for display only (don't start bot)
+    const state = await chrome.storage.local.get(['appliedCount', 'skippedCount', 'appliedJobs']);
+    appliedCount = state.appliedCount || 0;
+    skippedCount = state.skippedCount || 0;
+    appliedJobs = state.appliedJobs || [];
 
-      // Reload config
-      config = await chrome.storage.sync.get([
-        'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-        'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country'
-      ]);
-
-      // Restore counters
-      appliedCount = state.appliedCount || 0;
-      skippedCount = state.skippedCount || 0;
-      appliedJobs = state.appliedJobs || [];
-
-      // Restore resume data
-      resumeFile = state.resumeFile || null;
-      resumeFileName = state.resumeFileName || null;
-      resumeFileType = state.resumeFileType || null;
-
-      log(`✅ AUTO-RESTART: Restored state - Applied: ${appliedCount}, Skipped: ${skippedCount}`);
-      log(`Config: ${config.firstName} ${config.lastName}`);
-      if (resumeFile) log(`📄 Resume: ${resumeFileName}`);
-
-      // Restart bot
-      isRunning = true;
-      updateActivity(); // Reset activity timer
-
-      // Wait a bit for page to be fully loaded
-      await wait(2000);
-
-      log('🚀 AUTO-RESTART: Resuming mainLoop...');
-      mainLoop();
-    } else {
-      log('ℹ️ Bot not running - waiting for user to start');
-    }
+    log('ℹ️ Content script loaded - Bot ready (not running)');
+    log(`📊 Current stats: Applied ${appliedCount}, Skipped ${skippedCount}`);
+    log('⏸️ Waiting for user to click START button...');
   } catch (error) {
-    log(`⚠️ AUTO-RESTART error: ${error.message}`);
+    log(`⚠️ Initialization error: ${error.message}`);
   }
 })();
