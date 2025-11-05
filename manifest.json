@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "EasyApplyMax",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Automate LinkedIn Easy Apply job applications with AI-powered smart form filling",
   "permissions": [
     "storage",
@@ -19,13 +19,6 @@
       "128": "icons/icon128.png"
     }
   },
-  "content_scripts": [
-    {
-      "matches": ["https://www.linkedin.com/*"],
-      "js": ["content-simple.js"],
-      "run_at": "document_idle"
-    }
-  ],
   "background": {
     "service_worker": "background.js"
   },

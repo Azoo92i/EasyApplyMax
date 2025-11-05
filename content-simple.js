@@ -8,6 +8,9 @@ let lastActivityTime = Date.now(); // Track last activity for stuck detection
 let lastJobIndex = -1; // Track last job processed
 const STUCK_TIMEOUT = 120000; // 2 minutes without activity = stuck
 
+// SECURITY: Ultimate protection flag - bot can ONLY run if user explicitly clicked Start
+let userExplicitlyClickedStart = false;
+
 // Resume/CV data for automatic upload
 let resumeFile = null; // Base64 data
 let resumeFileName = null;
@@ -26,8 +29,17 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Cliquer
+// Cliquer - PROTECTED: Only works if bot is running
 async function click(element) {
+  // CRITICAL SECURITY CHECK: Prevent ANY clicks if bot is not explicitly started
+  if (!isRunning || !userExplicitlyClickedStart) {
+    console.error('🚨 SECURITY VIOLATION: Attempted click() but bot is NOT running!');
+    console.error('🔒 isRunning:', isRunning, '| userExplicitlyClickedStart:', userExplicitlyClickedStart);
+    console.error('🚫 Click BLOCKED for security');
+    console.trace('Call stack:'); // Show where this was called from
+    return; // BLOCK THE CLICK
+  }
+
   element.click();
   updateActivity(); // Update activity on every click
   await wait(500);
@@ -391,8 +403,16 @@ async function discardApplication() {
   }
 }
 
-// Remplir un champ
+// Remplir un champ - PROTECTED: Only works if bot is running
 function fill(input, value) {
+  // CRITICAL SECURITY CHECK: Prevent ANY form filling if bot is not explicitly started
+  if (!isRunning || !userExplicitlyClickedStart) {
+    console.error('🚨 SECURITY VIOLATION: Attempted fill() but bot is NOT running!');
+    console.error('🔒 isRunning:', isRunning, '| userExplicitlyClickedStart:', userExplicitlyClickedStart);
+    console.error('🚫 Fill BLOCKED for security');
+    return; // BLOCK THE FILL
+  }
+
   input.value = value;
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -444,13 +464,33 @@ async function fillFileInput(fileInput, file) {
 
 // BOUCLE PRINCIPALE - EXACTEMENT COMME PYTHON
 async function mainLoop() {
-  // SECURITY: Double-check that bot was explicitly started by user
+  // SECURITY: Triple-layer protection - bot MUST be explicitly started by user
   if (!isRunning) {
-    log('⚠️ SECURITY: mainLoop called but isRunning=false - Aborting');
+    log('⚠️ SECURITY BLOCK 1/3: mainLoop called but isRunning=false - ABORTING');
     return;
   }
 
-  log('🚀 Bot started by user - Beginning automation...');
+  if (!userExplicitlyClickedStart) {
+    log('🚨 SECURITY BLOCK 2/3: mainLoop called but user did NOT click Start - ABORTING');
+    log('🔒 This prevents any automatic execution. Bot ONLY runs when you click Start.');
+    isRunning = false; // Force stop for safety
+    return;
+  }
+
+  // Final sanity check
+  if (!config || !config.email) {
+    log('⚠️ SECURITY BLOCK 3/3: No config loaded - ABORTING');
+    isRunning = false;
+    userExplicitlyClickedStart = false;
+    return;
+  }
+
+  console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: green; font-weight: bold;');
+  console.log('%c🚀 BOT STARTED - User clicked START button', 'color: green; font-weight: bold; font-size: 14px;');
+  console.log('%c✅ ALL SECURITY CHECKS PASSED', 'color: green; font-weight: bold;');
+  console.log('%c🔓 Click() and Fill() functions are now ENABLED', 'color: green; font-weight: bold;');
+  console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: green; font-weight: bold;');
+  log('🚀 ✅ ALL SECURITY CHECKS PASSED - Bot started by user');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   while (isRunning) {
@@ -459,6 +499,7 @@ async function mainLoop() {
       if (checkDailyLimit()) {
         log('⛔ Stopping bot: Daily limit reached');
         isRunning = false;
+        userExplicitlyClickedStart = false; // Clear security flag
 
         // Notify popup
         try {
@@ -590,6 +631,7 @@ async function mainLoop() {
           log('');
 
           isRunning = false;
+          userExplicitlyClickedStart = false; // Clear security flag
 
           try {
             chrome.runtime.sendMessage({
@@ -624,7 +666,7 @@ async function mainLoop() {
             log('');
 
             isRunning = false;
-            // isRunning flag is now in-memory only (not persisted for security)
+            userExplicitlyClickedStart = false; // Clear security flag
 
             try {
               chrome.runtime.sendMessage({
@@ -1247,7 +1289,7 @@ async function mainLoop() {
               log(`🎯 MAX APPLICATIONS REACHED: ${appliedCount}/${maxApps}`);
               log('🛑 Stopping bot automatically...');
               isRunning = false;
-              // isRunning flag is now in-memory only (not persisted for security)
+              userExplicitlyClickedStart = false; // Clear security flag
 
               // Notify popup that bot stopped
               try {
@@ -1604,10 +1646,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         log(`Config: ${config.firstName} ${config.lastName}, exp: ${config.yearsOfExperience || 2}, max required: ${config.maxYearsRequired || 3}`);
         log(`Counters: Applied ${appliedCount}, Skipped ${skippedCount}`);
 
-        // SECURITY: Set isRunning flag (in memory only, not persisted)
+        // SECURITY: Set both protection flags (in memory only, never persisted)
         // This ensures bot stops on page refresh and requires manual restart
         isRunning = true;
-        log('✅ Bot started by user - Running in memory only');
+        userExplicitlyClickedStart = true; // CRITICAL: Only set when user clicks Start
+
+        log('✅ Bot started by USER - Running in memory only');
+        log('🔒 Security flags set: isRunning=true, userExplicitlyClickedStart=true');
         log('⚠️ Bot will stop if page is refreshed - this is a security feature');
 
         // Send response before starting main loop
@@ -1617,7 +1662,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         mainLoop();
       } else if (request.action === 'stop') {
         isRunning = false;
+        userExplicitlyClickedStart = false; // Clear security flag
         log('⏸️ Bot stopped by user');
+        log('🔒 Security flags cleared: isRunning=false, userExplicitlyClickedStart=false');
 
         sendResponse({ success: true, message: 'Bot stopped' });
       } else if (request.action === 'exportJobs') {
@@ -1647,13 +1694,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-log('Script loaded v2.20.0 - SECURITY: Auto-restart disabled, manual start only');
+console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
+console.log('%c🔒 EASYAPPLYMAX v1.3.0 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
+console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
+console.log('%c✅ Script injected ONLY when you clicked START', 'color: green; font-weight: bold;');
+console.log('%c🔒 NO automatic loading on LinkedIn pages', 'color: green; font-weight: bold;');
+console.log('%c🚀 Bot will start automatically after injection', 'color: orange; font-weight: bold;');
+console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
+log('Script loaded v1.3.0 - SECURITY: Manual injection mode - Script ONLY loaded when you click START');
 
-// SECURITY: Clear running state on page load to prevent auto-start
+// SECURITY: Clear ALL running state on page load to prevent auto-start
 // Bot will ONLY start when user explicitly clicks "Start" button
 (async () => {
   try {
-    // Clear isRunning flag to prevent any auto-start behavior
+    // CRITICAL: Clear ALL security flags
+    isRunning = false;
+    userExplicitlyClickedStart = false;
+
+    // PURGE: Clean any residual running state from storage
     await chrome.storage.local.set({ isRunning: false });
 
     // Load counters and state for display only (don't start bot)
@@ -1662,9 +1720,16 @@ log('Script loaded v2.20.0 - SECURITY: Auto-restart disabled, manual start only'
     skippedCount = state.skippedCount || 0;
     appliedJobs = state.appliedJobs || [];
 
-    log('ℹ️ Content script loaded - Bot ready (not running)');
+    console.log('%c⏸️ BOT STATUS: STOPPED (Waiting for START button)', 'background: #ff9800; color: white; font-weight: bold; padding: 4px 8px; border-radius: 3px;');
+    log('ℹ️ Content script loaded - Bot ready (NOT running)');
+    log('🔒 Security initialized: isRunning=false, userExplicitlyClickedStart=false');
     log(`📊 Current stats: Applied ${appliedCount}, Skipped ${skippedCount}`);
     log('⏸️ Waiting for user to click START button...');
+    console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
+    console.log('%c⚠️ IF YOU SEE ANY CLICKS WITHOUT CLICKING START:', 'color: red; font-weight: bold;');
+    console.log('%c   Check console for 🚨 SECURITY VIOLATION errors', 'color: red; font-weight: bold;');
+    console.log('%c   These will show WHERE the unauthorized click came from', 'color: red; font-weight: bold;');
+    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   } catch (error) {
     log(`⚠️ Initialization error: ${error.message}`);
   }

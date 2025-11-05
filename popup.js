@@ -150,6 +150,23 @@ document.getElementById('start-btn').addEventListener('click', async () => {
       return;
     }
 
+    console.log('🔒 SECURITY: Injecting content script ONLY when user clicks Start...');
+
+    // CRITICAL: Inject content script ONLY when user clicks Start
+    // This prevents ANY automatic execution
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content-simple.js']
+      });
+      console.log('✅ Content script injected successfully');
+
+      // Wait a bit for script to initialize
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (injectError) {
+      console.log('⚠️ Script may already be injected, continuing...');
+    }
+
     // Send message and wait for response
     const response = await chrome.tabs.sendMessage(tab.id, { action: 'start' });
 
@@ -162,13 +179,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
     await loadRunningState();
   } catch (error) {
     console.error('Start error:', error);
-
-    // More specific error messages
-    if (error.message && error.message.includes('Receiving end does not exist')) {
-      alert('⚠️ Content script not loaded!\n\nPlease:\n1. Reload the LinkedIn page (F5)\n2. Make sure you are on linkedin.com/jobs/search/\n3. Try starting the bot again');
-    } else {
-      alert('Error starting bot: ' + error.message + '\n\nPlease reload LinkedIn page (F5) and try again');
-    }
+    alert('Error starting bot: ' + error.message + '\n\nPlease try again or reload the page (F5)');
   }
 });
 
