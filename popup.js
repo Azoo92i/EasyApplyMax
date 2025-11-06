@@ -46,7 +46,7 @@ function setupTabs() {
 async function loadConfig() {
   const config = await chrome.storage.sync.get([
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode', 'city',
-    'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications', 'autoNextPage'
+    'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications', 'autoNextPage', 'expectedSalary'
   ]);
 
   // Load from local storage for larger data (resume)
@@ -60,6 +60,7 @@ async function loadConfig() {
   document.getElementById('city').value = config.city || '';
   document.getElementById('yearsOfExperience').value = config.yearsOfExperience || '2';
   document.getElementById('maxYearsRequired').value = config.maxYearsRequired || '3';
+  document.getElementById('expectedSalary').value = config.expectedSalary || '';
   document.getElementById('blacklistKeywords').value = config.blacklistKeywords || '';
   document.getElementById('maxApplications').value = config.maxApplications || '50';
   document.getElementById('autoNextPage').checked = config.autoNextPage !== false;
@@ -105,6 +106,7 @@ async function saveConfig() {
     city: document.getElementById('city').value,
     yearsOfExperience: document.getElementById('yearsOfExperience').value,
     maxYearsRequired: document.getElementById('maxYearsRequired').value,
+    expectedSalary: document.getElementById('expectedSalary').value,
     blacklistKeywords: document.getElementById('blacklistKeywords').value,
     maxApplications: document.getElementById('maxApplications').value,
     autoNextPage: document.getElementById('autoNextPage').checked
@@ -119,7 +121,7 @@ async function saveConfig() {
 function setupAutoSave() {
   const inputFields = [
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-    'city', 'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications'
+    'city', 'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords', 'maxApplications'
   ];
 
   inputFields.forEach(fieldId => {

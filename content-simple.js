@@ -305,14 +305,43 @@ async function discardApplication() {
       }
     }
 
-    // STEP 1: Press ESC key
-    log('📤 STEP 1: Pressing ESC key...');
+    // STEP 1: Force close with X button (MOST RELIABLE METHOD - moved to first)
+    log('🔍 STEP 1: Looking for X/Close button...');
+    const closeButtons = document.querySelectorAll('button[aria-label*="Dismiss"], button[aria-label*="Close"], button.artdeco-modal__dismiss');
+
+    for (let btn of closeButtons) {
+      if (btn.offsetParent) {
+        log(`✅ Clicking close button: ${btn.getAttribute('aria-label')}`);
+        btn.click();
+        await wait(1000);
+
+        // Look for discard confirmation again
+        const discardBtn = Array.from(document.querySelectorAll('button')).find(b =>
+          b.offsetParent && discardTexts.some(t => b.textContent.trim().toLowerCase().includes(t))
+        );
+
+        if (discardBtn) {
+          log('✅ Clicking discard confirmation');
+          discardBtn.click();
+          await wait(1500);
+        }
+
+        const modal = document.querySelector('.jobs-easy-apply-modal');
+        if (!modal || modal.offsetParent === null) {
+          log('✅✅✅ MODAL CLOSED!');
+          return true;
+        }
+      }
+    }
+
+    // STEP 2: Press ESC key (fallback)
+    log('📤 STEP 2: Pressing ESC key...');
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', keyCode: 27, bubbles: true }));
     await wait(2000); // Wait longer for popup
 
-    // STEP 2: Look for ANY discard/cancel button (aggressive search)
-    log('🔍 STEP 2: Searching for Discard/Cancel buttons...');
+    // STEP 3: Look for ANY discard/cancel button (last resort)
+    log('🔍 STEP 3: Searching for Discard/Cancel buttons...');
 
     // Try 3 times to find the button (it may appear slowly)
     for (let attempt = 1; attempt <= 3; attempt++) {
@@ -363,35 +392,6 @@ async function discardApplication() {
       }
 
       await wait(1000); // Wait before retry
-    }
-
-    // STEP 3: Force close with X button
-    log('🔍 STEP 3: Looking for X/Close button...');
-    const closeButtons = document.querySelectorAll('button[aria-label*="Dismiss"], button[aria-label*="Close"], button.artdeco-modal__dismiss');
-
-    for (let btn of closeButtons) {
-      if (btn.offsetParent) {
-        log(`✅ Clicking close button: ${btn.getAttribute('aria-label')}`);
-        btn.click();
-        await wait(1000);
-
-        // Look for discard confirmation again
-        const discardBtn = Array.from(document.querySelectorAll('button')).find(b =>
-          b.offsetParent && discardTexts.some(t => b.textContent.trim().toLowerCase().includes(t))
-        );
-
-        if (discardBtn) {
-          log('✅ Clicking discard confirmation');
-          discardBtn.click();
-          await wait(1500);
-        }
-
-        const modal = document.querySelector('.jobs-easy-apply-modal');
-        if (!modal || modal.offsetParent === null) {
-          log('✅✅✅ MODAL CLOSED!');
-          return true;
-        }
-      }
     }
 
     log('❌ DISCARD FAILED: Could not close modal after all attempts');
@@ -833,6 +833,15 @@ async function mainLoop() {
             if (label.match(/experience|years|expérience|années|años|jahre|anni|esperienza/)) {
               fill(input, config.yearsOfExperience || '2');
               log(`Years exp: ${config.yearsOfExperience || '2'}`);
+            }
+            // Salary / Compensation (EN/FR/ES/DE/IT)
+            else if (label.match(/salary|compensation|remuneration|salaire|rémunération|sueldo|salario|gehalt|stipendio/)) {
+              if (config.expectedSalary) {
+                fill(input, config.expectedSalary);
+                log(`Salary filled: ${config.expectedSalary}`);
+              } else {
+                log(`⚠️ Salary question detected but no expected salary configured`);
+              }
             }
             // Email
             else if (label.match(/email|e-mail|courriel|correo/)) fill(input, config.email);
@@ -1637,7 +1646,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === 'start') {
         config = await chrome.storage.sync.get([
           'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-          'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'maxApplications'
+          'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'maxApplications', 'expectedSalary'
         ]);
 
         // Charger les compteurs depuis storage
