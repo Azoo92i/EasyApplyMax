@@ -259,7 +259,7 @@ async function findAndClickDoneButton(contextElement = document, contextName = '
 
     if (clickSuccessful) {
       updateActivity();
-      await wait(2000);
+      await wait(1200); // Optimized job card click wait
       return { success: true, clicked: true };
     } else {
       return { success: false, clicked: false, reason: 'Click failed' };
@@ -297,7 +297,7 @@ async function discardApplication() {
       log('🔄 REFRESH DE LA PAGE POUR DÉBLOQUER...');
       try {
         location.reload();
-        await wait(3000);
+        await wait(2000); // Optimized refresh wait
         log('✅ Page rafraîchie avec succès');
         return true;
       } catch (error) {
@@ -338,7 +338,7 @@ async function discardApplication() {
     log('📤 STEP 2: Pressing ESC key...');
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', keyCode: 27, bubbles: true }));
-    await wait(2000); // Wait longer for popup
+    await wait(1000); // Optimized ESC wait
 
     // STEP 3: Look for ANY discard/cancel button (last resort)
     log('🔍 STEP 3: Searching for Discard/Cancel buttons...');
@@ -524,7 +524,7 @@ async function mainLoop() {
         log('🚨 SCRIPT STUCK DETECTED: No activity for 2 minutes!');
         log('🔄 Refreshing page to recover...');
         await refreshAndReturnToSearch();
-        await wait(5000);
+        await wait(2500); // Optimized stuck recovery wait
         updateActivity(); // Reset activity after refresh
         continue;
       }
@@ -540,11 +540,11 @@ async function mainLoop() {
           log('🚨 Page might be unrecognized (no jobs found + stuck)');
           log('🔄 Refreshing to return to job search...');
           await refreshAndReturnToSearch();
-          await wait(5000);
+          await wait(2500); // Optimized refresh recovery wait
           updateActivity();
         }
 
-        await wait(5000);
+        await wait(2500); // Optimized no jobs wait
         continue;
       }
 
@@ -565,7 +565,7 @@ async function mainLoop() {
         if (leftoverModal && leftoverModal.offsetParent !== null) {
           log('⚠️ WARNING: Modal from previous job still open! Cleaning up...');
           await discardApplication();
-          await wait(2000);
+          await wait(1000); // Optimized cleanup wait
 
           // Verify it's closed
           const stillOpen = document.querySelector('.jobs-easy-apply-modal');
@@ -605,7 +605,7 @@ async function mainLoop() {
         const link = job.querySelector('a');
         if (link) {
           await click(link);
-          await wait(2000);
+          await wait(1000); // Optimized job link wait
         }
 
         // Chercher Easy Apply (Python ligne 1853)
@@ -618,7 +618,7 @@ async function mainLoop() {
         }
 
         await click(easyApplyBtn);
-        await wait(2000);
+        await wait(1200); // Optimized Easy Apply wait
 
         // CRITICAL: Check for daily limit immediately after clicking Easy Apply
         // This catches the network error case where modal doesn't appear
@@ -658,7 +658,7 @@ async function mainLoop() {
         const modalCheck = document.querySelector('.jobs-easy-apply-modal');
         if (!modalCheck || modalCheck.offsetParent === null) {
           log('⚠️ Easy Apply modal did not appear - checking for limit...');
-          await wait(2000); // Wait a bit more
+          await wait(1000); // Optimized modal check wait
 
           if (checkDailyLimit()) {
             log('');
@@ -725,7 +725,7 @@ async function mainLoop() {
           if (checkForStuckLoadingPopup()) {
             log('🚨 POPUP TOUJOURS BLOQUÉ - REFRESH...');
             location.reload();
-            await wait(3000);
+            await wait(2000); // Optimized refresh wait
             skippedCount++;
             updateSkippedCount();
             break;
@@ -780,7 +780,7 @@ async function mainLoop() {
                 updateSkippedCount();
 
                 // Wait to ensure modal is closed and page is stable
-                await wait(2000);
+                await wait(1000); // Optimized modal stable wait
 
                 // Exit the step loop to move to next job
                 break;
@@ -1242,7 +1242,7 @@ async function mainLoop() {
           await click(nextBtn);
 
           // Attendre que la page change
-          await wait(2000);
+          await wait(1000); // Optimized page change wait
 
           // Vérifier si vraiment passé à l'étape suivante
           const stillSameModal = document.querySelector('.jobs-easy-apply-modal');
@@ -1338,13 +1338,13 @@ async function mainLoop() {
 
               // Skip all waiting - application is done
               log('--- End of job processing, moving to next ---');
-              await wait(1500); // Short wait before next job
+              await wait(800); // Optimized wait before next job
               break;
             }
 
             // Modal still open - need to find Done button
             log('⏳ Modal still open, searching for Done button...');
-            await wait(2000); // Wait a bit more for Done to appear
+            await wait(1000); // Optimized Done button wait
 
             // Use improved Done button finder
             const result = await findAndClickDoneButton(document, 'Main Modal', 15);
@@ -1376,7 +1376,7 @@ async function mainLoop() {
             // Application completed
             log('✅ Application completed, moving to next job');
             log('--- End of job processing ---');
-            await wait(1500); // Reduced wait before next job
+            await wait(800); // Optimized wait before next job
             break;
           }
         }
@@ -1407,7 +1407,7 @@ async function mainLoop() {
           if (nextPageBtn && nextPageBtn.offsetParent !== null) {
             log(`✅ Clique sur page ${currentPage + 1}`);
             await click(nextPageBtn);
-            await wait(3000);
+            await wait(1500); // Optimized page load wait
             nextPageClicked = true;
           }
         }
@@ -1436,7 +1436,7 @@ async function mainLoop() {
             if (isPaginationNext) {
               log('✅ Clique sur bouton Next');
               await click(btn);
-              await wait(3000);
+              await wait(1500); // Optimized page load wait
               nextPageClicked = true;
               break;
             }
@@ -1450,7 +1450,7 @@ async function mainLoop() {
         if (iconNextBtn && iconNextBtn.offsetParent !== null && !iconNextBtn.disabled) {
           log('✅ Clique sur bouton Next (icône)');
           await click(iconNextBtn);
-          await wait(3000);
+          await wait(1500); // Optimized page load wait
           nextPageClicked = true;
         }
       }
@@ -1465,7 +1465,7 @@ async function mainLoop() {
 
     } catch (error) {
       log(`Erreur: ${error.message}`);
-      await wait(3000);
+      await wait(1500); // Optimized error wait
     }
   }
 
