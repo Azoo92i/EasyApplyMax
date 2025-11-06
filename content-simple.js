@@ -474,6 +474,7 @@ async function mainLoop() {
     log('🚨 SECURITY BLOCK 2/3: mainLoop called but user did NOT click Start - ABORTING');
     log('🔒 This prevents any automatic execution. Bot ONLY runs when you click Start.');
     isRunning = false; // Force stop for safety
+    await chrome.storage.local.set({ isRunning: false });
     return;
   }
 
@@ -482,6 +483,7 @@ async function mainLoop() {
     log('⚠️ SECURITY BLOCK 3/3: No config loaded - ABORTING');
     isRunning = false;
     userExplicitlyClickedStart = false;
+    await chrome.storage.local.set({ isRunning: false });
     return;
   }
 
@@ -500,6 +502,9 @@ async function mainLoop() {
         log('⛔ Stopping bot: Daily limit reached');
         isRunning = false;
         userExplicitlyClickedStart = false; // Clear security flag
+
+        // Update storage
+        await chrome.storage.local.set({ isRunning: false });
 
         // Notify popup
         try {
@@ -633,6 +638,9 @@ async function mainLoop() {
           isRunning = false;
           userExplicitlyClickedStart = false; // Clear security flag
 
+          // Update storage
+          await chrome.storage.local.set({ isRunning: false });
+
           try {
             chrome.runtime.sendMessage({
               type: 'updateStatus',
@@ -667,6 +675,9 @@ async function mainLoop() {
 
             isRunning = false;
             userExplicitlyClickedStart = false; // Clear security flag
+
+            // Update storage
+            await chrome.storage.local.set({ isRunning: false });
 
             try {
               chrome.runtime.sendMessage({
@@ -1291,6 +1302,9 @@ async function mainLoop() {
               isRunning = false;
               userExplicitlyClickedStart = false; // Clear security flag
 
+              // Update storage
+              await chrome.storage.local.set({ isRunning: false });
+
               // Notify popup that bot stopped
               try {
                 chrome.runtime.sendMessage({ type: 'setRunning', value: false });
@@ -1646,17 +1660,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         log(`Config: ${config.firstName} ${config.lastName}, exp: ${config.yearsOfExperience || 2}, max required: ${config.maxYearsRequired || 3}`);
         log(`Counters: Applied ${appliedCount}, Skipped ${skippedCount}`);
 
-        // SECURITY: Set both protection flags (in memory only, never persisted)
-        // This ensures bot stops on page refresh and requires manual restart
+        // SECURITY: Set both protection flags
         isRunning = true;
         userExplicitlyClickedStart = true; // CRITICAL: Only set when user clicks Start
 
-        log('✅ Bot started by USER - Running in memory only');
+        log('✅ Bot started by USER');
         log('🔒 Security flags set: isRunning=true, userExplicitlyClickedStart=true');
-        log('⚠️ Bot will stop if page is refreshed - this is a security feature');
+
+        // Update storage
+        await chrome.storage.local.set({ isRunning: true });
 
         // Send response before starting main loop
         sendResponse({ success: true, message: 'Bot started' });
+
+        // Notify popup that bot has started
+        try {
+          chrome.runtime.sendMessage({ type: 'botStarted' });
+        } catch (e) {
+          // Popup may be closed
+        }
 
         // Start main loop (don't await - let it run in background)
         mainLoop();
@@ -1666,7 +1688,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         log('⏸️ Bot stopped by user');
         log('🔒 Security flags cleared: isRunning=false, userExplicitlyClickedStart=false');
 
+        // Update storage
+        await chrome.storage.local.set({ isRunning: false });
+
         sendResponse({ success: true, message: 'Bot stopped' });
+
+        // Notify popup that bot has stopped
+        try {
+          chrome.runtime.sendMessage({ type: 'botStopped' });
+        } catch (e) {
+          // Popup may be closed
+        }
       } else if (request.action === 'exportJobs') {
         // Exporter les jobs en CSV
         sendResponse({ jobs: appliedJobs });
@@ -1695,13 +1727,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-console.log('%c🔒 EASYAPPLYMAX v1.3.0 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
+console.log('%c🔒 EASYAPPLYMAX v1.3.1 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
 console.log('%c✅ Script injected ONLY when you clicked START', 'color: green; font-weight: bold;');
 console.log('%c🔒 NO automatic loading on LinkedIn pages', 'color: green; font-weight: bold;');
 console.log('%c🚀 Bot will start automatically after injection', 'color: orange; font-weight: bold;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-log('Script loaded v1.3.0 - SECURITY: Manual injection mode - Script ONLY loaded when you click START');
+log('Script loaded v1.3.1 - SECURITY: Manual injection mode - Script ONLY loaded when you click START');
 
 // SECURITY: Clear ALL running state on page load to prevent auto-start
 // Bot will ONLY start when user explicitly clicks "Start" button

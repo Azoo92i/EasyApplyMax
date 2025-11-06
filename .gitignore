@@ -41,3 +41,6 @@ yarn.lock
 # User data (stored locally)
 user-config.json
 applied-jobs-*.csv
+
+# Project documentation (internal use only)
+project-docs/

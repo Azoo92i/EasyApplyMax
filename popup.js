@@ -1,12 +1,23 @@
 // Popup script for UI management
 let isRunning = false;
 
+// Load running state from storage
+async function loadRunningState() {
+  const local = await chrome.storage.local.get(['isRunning']);
+  isRunning = local.isRunning || false;
+  updateButtons();
+  updateStatusDisplay(isRunning ? 'Running' : 'Stopped', isRunning);
+}
+
 // Load config on startup
 document.addEventListener('DOMContentLoaded', async () => {
   await loadConfig();
   await updateStatus();
-  await loadRunningState(); // Load bot running state
+  await loadRunningState(); // Load current running state
   setupTabs();
+  setupResumeUpload();
+  setupValidation(); // Setup field validation
+  checkOnboarding(); // Check if first time user
 });
 
 // Setup tabs
@@ -140,13 +151,19 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 
     // Check if we're on LinkedIn
     if (!tab.url || !tab.url.includes('linkedin.com')) {
-      alert('⚠️ Please open a LinkedIn job search page first!\n\nExample: linkedin.com/jobs/search/');
+      showToast('Please open a LinkedIn job search page first! (linkedin.com/jobs/search/)', 'warning', 6000);
       return;
     }
 
     // Check if on job search page
     if (!tab.url.includes('/jobs/')) {
-      alert('⚠️ Please navigate to LinkedIn Jobs page first!\n\nGo to: linkedin.com/jobs/search/');
+      showToast('Please navigate to LinkedIn Jobs page first! (linkedin.com/jobs/search/)', 'warning', 6000);
+      return;
+    }
+
+    // Validate fields before starting
+    if (!validateAllFields()) {
+      showToast('Please fix the errors in your personal information before starting', 'error');
       return;
     }
 
@@ -174,12 +191,11 @@ document.getElementById('start-btn').addEventListener('click', async () => {
       console.log('Bot started successfully:', response.message);
     }
 
-    // Wait a bit for content script to update storage, then reload state
+    // Content script will send botStarted/botStopped messages
     await new Promise(resolve => setTimeout(resolve, 300));
-    await loadRunningState();
   } catch (error) {
     console.error('Start error:', error);
-    alert('Error starting bot: ' + error.message + '\n\nPlease try again or reload the page (F5)');
+    showToast('Error starting bot. Please reload the LinkedIn page (F5) and try again.', 'error');
   }
 });
 
@@ -204,9 +220,8 @@ document.getElementById('stop-btn').addEventListener('click', async () => {
       console.log('Bot stopped successfully:', response.message);
     }
 
-    // Wait a bit for content script to update storage, then reload state
+    // Content script will send botStarted/botStopped messages
     await new Promise(resolve => setTimeout(resolve, 300));
-    await loadRunningState();
   } catch (error) {
     console.error('Stop error:', error);
 
@@ -237,31 +252,29 @@ async function updateStatus() {
   document.getElementById('skipped-count').textContent = local.skippedCount || 0;
 }
 
-// Load running state from storage
-async function loadRunningState() {
-  const local = await chrome.storage.local.get(['isRunning']);
-  isRunning = local.isRunning === true;
-  updateButtons();
-  updateStatusDisplay(isRunning ? 'Running' : 'Stopped', isRunning);
-}
-
-// Listen for updates
+// Listen for updates from content script
 chrome.runtime.onMessage.addListener((request) => {
   if (request.type === 'updateCount') {
     document.getElementById('applied-count').textContent = request.count;
   } else if (request.type === 'updateSkippedCount') {
     document.getElementById('skipped-count').textContent = request.count;
-  } else if (request.type === 'setRunning') {
-    isRunning = request.value;
+  } else if (request.type === 'botStarted') {
+    // Bot has started in content script
+    isRunning = true;
     updateButtons();
-    updateStatusDisplay(request.value ? 'Running' : 'Stopped', request.value);
+    updateStatusDisplay('Running', true);
+  } else if (request.type === 'botStopped') {
+    // Bot has stopped in content script
+    isRunning = false;
+    updateButtons();
+    updateStatusDisplay('Stopped', false);
   }
 });
 
-// Update status and running state every 2 seconds
+// Update status (counters) every 2 seconds
+// NOTE: isRunning state is NOT in storage anymore, managed by messages from content script
 setInterval(async () => {
   await updateStatus();
-  await loadRunningState();
 }, 2000);
 
 // Export jobs to CSV
@@ -272,7 +285,7 @@ document.getElementById('export-csv-btn').addEventListener('click', async () => 
     const jobs = local.appliedJobs || [];
 
     if (jobs.length === 0) {
-      alert('No jobs applied yet. Start the bot first!');
+      showToast('No jobs applied yet. Start the bot first!', 'info');
       return;
     }
 
@@ -300,7 +313,7 @@ document.getElementById('export-csv-btn').addEventListener('click', async () => 
     }, 3000);
   } catch (error) {
     console.error('Export error:', error);
-    alert('Error exporting jobs: ' + error.message);
+    showToast('Error exporting jobs: ' + error.message, 'error');
   }
 });
 
@@ -476,14 +489,14 @@ function setupResumeUpload() {
 
     // Check file size (max 5MB for Chrome Storage local)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File too large! Please upload a file smaller than 5MB.');
+      showToast('File too large! Please upload a file smaller than 5MB.');
       return;
     }
 
     // Check file type
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
-      alert('Invalid file type! Please upload PDF, DOC, or DOCX files only.');
+      showToast('Invalid file type! Please upload PDF, DOC, or DOCX files only.');
       return;
     }
 
@@ -514,7 +527,7 @@ function setupResumeUpload() {
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading resume:', error);
-      alert('Error uploading file. Please try again.');
+      showToast('Error uploading file. Please try again.');
     }
   });
 

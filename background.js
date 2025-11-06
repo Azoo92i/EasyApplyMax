@@ -1,12 +1,14 @@
 // Service worker de l'extension
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('LinkedIn Auto Apply extension installée');
+  console.log('EasyApplyMax v1.3.1 - Extension installée');
 
   // Initialiser le storage
   chrome.storage.local.set({
     isRunning: false,
     appliedCount: 0,
-    skippedCount: 0
+    skippedCount: 0,
+    appliedJobs: [],
+    onboardingCompleted: false
   });
 });
 
