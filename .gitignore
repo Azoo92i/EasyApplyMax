@@ -44,7 +44,7 @@ applied-jobs-*.csv
 
 # Project documentation (internal use only)
 project-docs/
-old-docs/
+docs/
 
 # Chrome Web Store release package (not for GitHub)
 chrome-store-release/

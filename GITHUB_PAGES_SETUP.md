@@ -10,7 +10,7 @@ Héberger votre Privacy Policy sur GitHub Pages (gratuit) pour la soumission Chr
 
 ## 📦 Ce qui est Déjà Prêt
 
-✅ Dossier `docs/` créé avec :
+✅ Dossier `github-pages/` créé avec :
 - `privacy-policy.html` - Privacy Policy complète et professionnelle
 - `index.html` - Page de redirection
 - `README.md` - Documentation
@@ -21,11 +21,11 @@ Héberger votre Privacy Policy sur GitHub Pages (gratuit) pour la soumission Chr
 
 ### Étape 1️⃣ : Pousser sur GitHub
 
-Si ce n'est pas déjà fait, poussez le dossier `docs/` sur GitHub :
+Si ce n'est pas déjà fait, poussez le dossier `github-pages/` sur GitHub :
 
 ```bash
 # Ajoutez les fichiers
-git add docs/
+git add github-pages/
 
 # Commitez
 git commit -m "Add privacy policy for GitHub Pages"
@@ -34,7 +34,7 @@ git commit -m "Add privacy policy for GitHub Pages"
 git push origin main
 ```
 
-**⚠️ Important :** Le dossier `docs/` doit être dans la branche `main` (ou `master`).
+**⚠️ Important :** Le dossier `github-pages/` doit être dans la branche `main` (ou `master`).
 
 ---
 
@@ -75,7 +75,7 @@ https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
 
 ❌ Si erreur 404 :
 - Attendez 2-3 minutes de plus
-- Vérifiez que le dossier `docs/` est bien dans `main`
+- Vérifiez que le dossier `github-pages/` est bien dans `main`
 - Vérifiez Settings > Pages > Source
 
 ---
@@ -85,7 +85,7 @@ https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
 Avant de soumettre au Chrome Web Store :
 
 - [ ] Repository GitHub créé et public
-- [ ] Dossier `docs/` poussé sur GitHub (branche `main`)
+- [ ] Dossier `github-pages/` poussé sur GitHub (branche `main`)
 - [ ] GitHub Pages activé (Settings > Pages)
 - [ ] Source configurée : `main` + `/docs`
 - [ ] Privacy Policy accessible : `https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html`
@@ -99,7 +99,7 @@ Avant de soumettre au Chrome Web Store :
 
 ### Modifier les Liens GitHub
 
-Dans `docs/privacy-policy.html`, ligne ~569 et ~594, remplacez :
+Dans `github-pages/privacy-policy.html`, ligne ~569 et ~594, remplacez :
 
 ```html
 https://github.com/YOUR-USERNAME/EasyApplyMax
@@ -124,15 +124,15 @@ Si vous voulez ajouter un email de contact, ajoutez dans la section Contact :
 **Causes possibles :**
 1. GitHub Pages pas encore déployé → Attendez 2-3 minutes
 2. Mauvaise branche sélectionnée → Vérifiez Settings > Pages
-3. Dossier `docs/` pas dans `main` → Vérifiez avec `git log`
+3. Dossier `github-pages/` pas dans `main` → Vérifiez avec `git log`
 
 **Solution :**
 ```bash
 # Vérifier la branche actuelle
 git branch
 
-# Vérifier que docs/ est commité
-git log --oneline -- docs/
+# Vérifier que github-pages/ est commité
+git log --oneline -- github-pages/
 
 # Re-pousser si nécessaire
 git push origin main
@@ -143,7 +143,7 @@ git push origin main
 **Cause :** Erreur dans le HTML
 
 **Solution :**
-1. Ouvrez `docs/privacy-policy.html` en local dans un navigateur
+1. Ouvrez `github-pages/privacy-policy.html` en local dans un navigateur
 2. Ouvrez la console (F12)
 3. Vérifiez les erreurs
 4. Corrigez et re-poussez
@@ -174,10 +174,10 @@ https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
 Pour modifier la Privacy Policy plus tard :
 
 ```bash
-# 1. Modifiez docs/privacy-policy.html
+# 1. Modifiez github-pages/privacy-policy.html
 # 2. Mettez à jour la date "Last Updated"
 # 3. Commitez et poussez
-git add docs/privacy-policy.html
+git add github-pages/privacy-policy.html
 git commit -m "Update privacy policy"
 git push origin main
 
@@ -208,7 +208,7 @@ git push origin main
 
 ```bash
 # 1. Poussez sur GitHub
-git add docs/ && git commit -m "Add privacy policy" && git push
+git add github-pages/ && git commit -m "Add privacy policy" && git push
 
 # 2. Activez GitHub Pages
 # → GitHub Settings > Pages > Source: main + /docs > Save
@@ -227,7 +227,7 @@ git add docs/ && git commit -m "Add privacy policy" && git push
 Votre Privacy Policy est maintenant hébergée professionnellement sur GitHub Pages !
 
 **Questions ?**
-- Consultez `docs/README.md` pour plus de détails
+- Consultez `github-pages/README.md` pour plus de détails
 - Rejoignez notre Discord : https://discord.gg/xWaCXBZbws
 - GitHub Docs : https://docs.github.com/pages
 
