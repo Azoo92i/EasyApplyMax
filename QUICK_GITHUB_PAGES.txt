@@ -1,0 +1,119 @@
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║          🚀 ACTIVATION GITHUB PAGES - GUIDE RAPIDE 🚀         ║
+║                    3 Commandes à Exécuter                     ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+
+✅ TOUT EST PRÊT ! Le dossier docs/ contient votre Privacy Policy.
+
+
+═══════════════════════════════════════════════════════════════════
+ 📦 ÉTAPE 1 : POUSSER SUR GITHUB
+═══════════════════════════════════════════════════════════════════
+
+Exécutez ces 3 commandes :
+
+1️⃣  git add .
+
+2️⃣  git commit -m "Add privacy policy for GitHub Pages"
+
+3️⃣  git push origin main
+
+
+⏱️  Cela prend ~10 secondes
+
+
+═══════════════════════════════════════════════════════════════════
+ ⚙️  ÉTAPE 2 : ACTIVER GITHUB PAGES (Interface Web)
+═══════════════════════════════════════════════════════════════════
+
+1. Allez sur : https://github.com/YOUR-USERNAME/EasyApplyMax
+
+2. Cliquez sur : Settings ⚙️ (en haut à droite)
+
+3. Menu gauche : Pages (sous "Code and automation")
+
+4. Dans "Source" :
+   ┌─────────────────────────────┐
+   │ Branch: main         ▼      │
+   │ Folder: /docs        ▼      │  ← CHOISISSEZ /docs
+   │                             │
+   │         [Save]              │
+   └─────────────────────────────┘
+
+5. Cliquez : Save
+
+6. ⏱️  Attendez 1-2 minutes (GitHub déploie votre site)
+
+7. ✅ Une notification verte apparaîtra :
+   "Your site is published at https://..."
+
+
+═══════════════════════════════════════════════════════════════════
+ ✅ ÉTAPE 3 : VÉRIFIER QUE ÇA FONCTIONNE
+═══════════════════════════════════════════════════════════════════
+
+Visitez cette URL dans votre navigateur :
+
+https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
+
+⚠️  Remplacez YOUR-USERNAME par votre vrai nom d'utilisateur GitHub !
+
+
+✅ Si la page s'affiche → C'EST PRÊT ! ✅
+
+❌ Si erreur 404 :
+   - Attendez 2-3 minutes de plus
+   - Vérifiez Settings > Pages > Source = main + /docs
+   - Rafraîchissez la page (Ctrl+F5)
+
+
+═══════════════════════════════════════════════════════════════════
+ 🎯 UTILISER DANS CHROME WEB STORE
+═══════════════════════════════════════════════════════════════════
+
+Lors de la soumission Chrome Web Store, dans "Privacy Policy URL" :
+
+👉  https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
+
+⚠️  N'oubliez pas de remplacer YOUR-USERNAME !
+
+
+═══════════════════════════════════════════════════════════════════
+ 📋 RÉCAPITULATIF
+═══════════════════════════════════════════════════════════════════
+
+Dossier docs/ :
+✓ privacy-policy.html   - Privacy Policy complète (22KB)
+✓ index.html            - Page de redirection
+✓ README.md             - Documentation
+
+Fichiers mis à jour :
+✓ .gitignore            - docs/ n'est plus ignoré
+✓ GITHUB_PAGES_SETUP.md - Guide détaillé
+
+
+═══════════════════════════════════════════════════════════════════
+ 🆘 BESOIN D'AIDE ?
+═══════════════════════════════════════════════════════════════════
+
+Guide détaillé : GITHUB_PAGES_SETUP.md
+Documentation :  docs/README.md
+Discord :        https://discord.gg/xWaCXBZbws
+
+
+═══════════════════════════════════════════════════════════════════
+ 🎉 C'EST TOUT !
+═══════════════════════════════════════════════════════════════════
+
+3 commandes git + activation GitHub Pages = Privacy Policy en ligne !
+
+Prochaine étape :
+→ Allez dans chrome-store-release/
+→ Lisez START_HERE.txt
+→ Suivez SUBMISSION_GUIDE.md
+
+
+Bonne chance ! 🚀
