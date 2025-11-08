@@ -37,6 +37,28 @@ A powerful Chrome extension that automates LinkedIn Easy Apply job applications 
 
 ---
 
+## 🎥 Video Tutorial
+
+<div align="center">
+
+### 📺 Watch the Complete Tutorial
+
+Learn how to install and use EasyApplyMax in this comprehensive video guide:
+
+[![EasyApplyMax Tutorial](https://img.shields.io/badge/YouTube-Watch%20Tutorial-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=e7mUETgoZrI)
+
+**[▶️ Watch on YouTube](https://www.youtube.com/watch?v=e7mUETgoZrI)**
+
+The video covers:
+- ✅ Installation and setup
+- ✅ Configuration of your profile
+- ✅ How to use the extension
+- ✅ Tips and best practices
+
+</div>
+
+---
+
 ## 💬 Community & Support
 
 <div align="center">

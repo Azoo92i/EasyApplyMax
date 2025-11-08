@@ -18,8 +18,8 @@ Cette URL sera utilisée dans votre soumission Chrome Web Store.
 ### Étape 1 : Pousser sur GitHub
 
 ```bash
-# Assurez-vous que le dossier github-pages/ est commité
-git add github-pages/
+# Assurez-vous que le dossier docs/ est commité
+git add docs/
 git commit -m "Add privacy policy for GitHub Pages"
 git push origin main
 ```
@@ -51,7 +51,7 @@ Visitez : `https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html`
 ## 📋 Fichiers dans ce Dossier
 
 ```
-github-pages/
+docs/
 ├── index.html              - Redirige vers privacy-policy.html
 ├── privacy-policy.html     - Privacy Policy complète (HTML)
 └── README.md               - Ce fichier
@@ -123,7 +123,7 @@ Pour mettre à jour la Privacy Policy :
 2. Mettez à jour la date "Last Updated"
 3. Commit et push :
    ```bash
-   git add github-pages/privacy-policy.html
+   git add docs/privacy-policy.html
    git commit -m "Update privacy policy"
    git push origin main
    ```
@@ -135,7 +135,7 @@ Pour mettre à jour la Privacy Policy :
 
 Si GitHub Pages ne fonctionne pas :
 
-1. Vérifiez que le dossier `github-pages/` est bien dans la branche `main`
+1. Vérifiez que le dossier `docs/` est bien dans la branche `main`
 2. Vérifiez Settings > Pages > Source = `main` + `/docs`
 3. Attendez 2-3 minutes après activation
 4. Consultez la documentation : https://docs.github.com/pages
