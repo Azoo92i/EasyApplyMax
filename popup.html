@@ -234,7 +234,62 @@
         <small>Your expected annual salary (used for salary-related questions)</small>
       </div>
 
-      <div class="form-group">
+      <!-- Common Questions Section -->
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+        <h3 style="font-size: 14px; font-weight: 600; color: #0a66c2; margin-bottom: 15px;">Common Application Questions</h3>
+
+        <div class="form-group">
+          <label>Visa Sponsorship Required?</label>
+          <select id="visaSponsorship">
+            <option value="">Not specified</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <small>Answer to "Do you need visa sponsorship?" questions</small>
+        </div>
+
+        <div class="form-group">
+          <label>Legally Authorized to Work?</label>
+          <select id="legallyAuthorized">
+            <option value="">Not specified</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <small>Answer to work authorization questions</small>
+        </div>
+
+        <div class="form-group">
+          <label>Willing to Relocate?</label>
+          <select id="willingToRelocate">
+            <option value="">Not specified</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <small>Answer to relocation questions</small>
+        </div>
+
+        <div class="form-group">
+          <label>Have Security Clearance?</label>
+          <select id="securityClearance">
+            <option value="">Not specified</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <small>Answer to security clearance questions</small>
+        </div>
+
+        <div class="form-group">
+          <label>Have Driver's License?</label>
+          <select id="driversLicense">
+            <option value="">Not specified</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+          <small>Answer to driver's license questions</small>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 20px;">
         <label>Max Applications</label>
         <input type="number" id="maxApplications" placeholder="50" min="1" max="100" value="50">
         <small>LinkedIn limits ~50 Easy Apply per day</small>

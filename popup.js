@@ -46,7 +46,8 @@ function setupTabs() {
 async function loadConfig() {
   const config = await chrome.storage.sync.get([
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode', 'city',
-    'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications', 'autoNextPage', 'expectedSalary'
+    'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications', 'autoNextPage', 'expectedSalary',
+    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'securityClearance', 'driversLicense'
   ]);
 
   // Load from local storage for larger data (resume)
@@ -64,6 +65,13 @@ async function loadConfig() {
   document.getElementById('blacklistKeywords').value = config.blacklistKeywords || '';
   document.getElementById('maxApplications').value = config.maxApplications || '50';
   document.getElementById('autoNextPage').checked = config.autoNextPage !== false;
+
+  // Load common questions
+  document.getElementById('visaSponsorship').value = config.visaSponsorship || '';
+  document.getElementById('legallyAuthorized').value = config.legallyAuthorized || '';
+  document.getElementById('willingToRelocate').value = config.willingToRelocate || '';
+  document.getElementById('securityClearance').value = config.securityClearance || '';
+  document.getElementById('driversLicense').value = config.driversLicense || '';
 
   // Load resume if exists
   if (local.resumeFileName) {
@@ -109,7 +117,12 @@ async function saveConfig() {
     expectedSalary: document.getElementById('expectedSalary').value,
     blacklistKeywords: document.getElementById('blacklistKeywords').value,
     maxApplications: document.getElementById('maxApplications').value,
-    autoNextPage: document.getElementById('autoNextPage').checked
+    autoNextPage: document.getElementById('autoNextPage').checked,
+    visaSponsorship: document.getElementById('visaSponsorship').value,
+    legallyAuthorized: document.getElementById('legallyAuthorized').value,
+    willingToRelocate: document.getElementById('willingToRelocate').value,
+    securityClearance: document.getElementById('securityClearance').value,
+    driversLicense: document.getElementById('driversLicense').value
   };
 
   showAutoSaveIndicator(true);
@@ -121,7 +134,8 @@ async function saveConfig() {
 function setupAutoSave() {
   const inputFields = [
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-    'city', 'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords', 'maxApplications'
+    'city', 'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords', 'maxApplications',
+    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'securityClearance', 'driversLicense'
   ];
 
   inputFields.forEach(fieldId => {

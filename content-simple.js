@@ -999,23 +999,73 @@ async function mainLoop() {
             const radioInputs = fieldset.querySelectorAll('input[type="radio"]');
             let answered = false;
 
-            // Look for "Yes" first (Python line 1044) - Multilingual
+            // SMART DETECTION: Check for specific questions and use user's configuration
+            let desiredAnswer = 'yes'; // default
+
+            // Visa sponsorship question
+            if (questionText.match(/visa|sponsor|sponsorship/i) && config.visaSponsorship) {
+              desiredAnswer = config.visaSponsorship;
+              log(`⚙️ Visa question detected, answering: ${desiredAnswer}`);
+            }
+            // Work authorization question
+            else if (questionText.match(/author|legal.*work|permit.*work|eligib.*work|right.*work/i) && config.legallyAuthorized) {
+              desiredAnswer = config.legallyAuthorized;
+              log(`⚙️ Work authorization question detected, answering: ${desiredAnswer}`);
+            }
+            // Relocation question
+            else if (questionText.match(/relocat|move.*locat|willing.*move/i) && config.willingToRelocate) {
+              desiredAnswer = config.willingToRelocate;
+              log(`⚙️ Relocation question detected, answering: ${desiredAnswer}`);
+            }
+            // Security clearance question
+            else if (questionText.match(/security.*clearance|clearance/i) && config.securityClearance) {
+              desiredAnswer = config.securityClearance;
+              log(`⚙️ Security clearance question detected, answering: ${desiredAnswer}`);
+            }
+            // Driver's license question
+            else if (questionText.match(/driver.*license|driving.*license|valid.*license/i) && config.driversLicense) {
+              desiredAnswer = config.driversLicense;
+              log(`⚙️ Driver's license question detected, answering: ${desiredAnswer}`);
+            }
+
+            // Click the appropriate answer (Yes or No)
             for (let radio of radioInputs) {
               const radioLabel = fieldset.querySelector(`label[for="${radio.id}"]`);
               const radioText = radioLabel ? radioLabel.textContent.trim().toLowerCase() : '';
 
-              // Yes in multiple languages: EN, FR, ES, DE, IT
-              if (radioText.match(/^(yes|oui|sí|si|ja|y)$/)) {
+              // Match Yes/No in multiple languages
+              const isYes = radioText.match(/^(yes|oui|sí|si|ja|y)$/);
+              const isNo = radioText.match(/^(no|non|nein|n)$/);
+
+              if ((desiredAnswer === 'yes' && isYes) || (desiredAnswer === 'no' && isNo)) {
                 if (!radio.checked) {
                   radioLabel ? radioLabel.click() : radio.click();
-                  log(`Radio Yes: ${questionText.substring(0, 30)}`);
+                  log(`Radio ${desiredAnswer}: ${questionText.substring(0, 30)}`);
                   answered = true;
                 }
                 break;
               }
             }
 
-            // If no "Yes", check first option
+            // If no specific answer found, look for "Yes" as default (backward compatibility)
+            if (!answered) {
+              for (let radio of radioInputs) {
+                const radioLabel = fieldset.querySelector(`label[for="${radio.id}"]`);
+                const radioText = radioLabel ? radioLabel.textContent.trim().toLowerCase() : '';
+
+                // Yes in multiple languages: EN, FR, ES, DE, IT
+                if (radioText.match(/^(yes|oui|sí|si|ja|y)$/)) {
+                  if (!radio.checked) {
+                    radioLabel ? radioLabel.click() : radio.click();
+                    log(`Radio Yes (default): ${questionText.substring(0, 30)}`);
+                    answered = true;
+                  }
+                  break;
+                }
+              }
+            }
+
+            // If still no answer, check first option as last resort
             if (!answered && radioInputs.length > 0 && !radioInputs[0].checked) {
               const firstLabel = fieldset.querySelector(`label[for="${radioInputs[0].id}"]`);
               firstLabel ? firstLabel.click() : radioInputs[0].click();
@@ -1646,7 +1696,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === 'start') {
         config = await chrome.storage.sync.get([
           'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-          'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'maxApplications', 'expectedSalary'
+          'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'maxApplications', 'expectedSalary',
+          'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'securityClearance', 'driversLicense'
         ]);
 
         // Charger les compteurs depuis storage
