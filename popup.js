@@ -47,7 +47,7 @@ async function loadConfig() {
   const config = await chrome.storage.sync.get([
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode', 'city',
     'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications', 'autoNextPage', 'expectedSalary',
-    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'securityClearance', 'driversLicense'
+    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
   ]);
 
   // Load from local storage for larger data (resume)
@@ -66,12 +66,11 @@ async function loadConfig() {
   document.getElementById('maxApplications').value = config.maxApplications || '50';
   document.getElementById('autoNextPage').checked = config.autoNextPage !== false;
 
-  // Load common questions
-  document.getElementById('visaSponsorship').value = config.visaSponsorship || '';
-  document.getElementById('legallyAuthorized').value = config.legallyAuthorized || '';
-  document.getElementById('willingToRelocate').value = config.willingToRelocate || '';
-  document.getElementById('securityClearance').value = config.securityClearance || '';
-  document.getElementById('driversLicense').value = config.driversLicense || '';
+  // Load common questions (with smart defaults)
+  document.getElementById('visaSponsorship').value = config.visaSponsorship || 'no';
+  document.getElementById('legallyAuthorized').value = config.legallyAuthorized || 'yes';
+  document.getElementById('willingToRelocate').value = config.willingToRelocate || 'no';
+  document.getElementById('driversLicense').value = config.driversLicense || 'yes';
 
   // Load resume if exists
   if (local.resumeFileName) {
@@ -121,7 +120,6 @@ async function saveConfig() {
     visaSponsorship: document.getElementById('visaSponsorship').value,
     legallyAuthorized: document.getElementById('legallyAuthorized').value,
     willingToRelocate: document.getElementById('willingToRelocate').value,
-    securityClearance: document.getElementById('securityClearance').value,
     driversLicense: document.getElementById('driversLicense').value
   };
 
@@ -135,7 +133,7 @@ function setupAutoSave() {
   const inputFields = [
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
     'city', 'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords', 'maxApplications',
-    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'securityClearance', 'driversLicense'
+    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
   ];
 
   inputFields.forEach(fieldId => {

@@ -1017,10 +1017,10 @@ async function mainLoop() {
               desiredAnswer = config.willingToRelocate;
               log(`⚙️ Relocation question detected, answering: ${desiredAnswer}`);
             }
-            // Security clearance question
-            else if (questionText.match(/security.*clearance|clearance/i) && config.securityClearance) {
-              desiredAnswer = config.securityClearance;
-              log(`⚙️ Security clearance question detected, answering: ${desiredAnswer}`);
+            // Security clearance question (always answer No)
+            else if (questionText.match(/security.*clearance|clearance/i)) {
+              desiredAnswer = 'no';
+              log(`⚙️ Security clearance question detected, answering: no (default)`);
             }
             // Driver's license question
             else if (questionText.match(/driver.*license|driving.*license|valid.*license/i) && config.driversLicense) {
@@ -1697,7 +1697,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         config = await chrome.storage.sync.get([
           'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
           'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'maxApplications', 'expectedSalary',
-          'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'securityClearance', 'driversLicense'
+          'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
         ]);
 
         // Charger les compteurs depuis storage
