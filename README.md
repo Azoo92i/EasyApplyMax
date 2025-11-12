@@ -4,6 +4,26 @@
 
 A powerful Chrome extension that automates LinkedIn Easy Apply job applications with smart form filling and human-like behavior simulation.
 
+---
+
+## 📥 Installation
+
+<div align="center">
+
+### ⚡ Install from Chrome Web Store (Recommended)
+
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Download-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/easyapplymax/oeaobljpdipleeanlfjppmlokkajodbk)
+
+**[🔗 Click here to install EasyApplyMax](https://chromewebstore.google.com/detail/easyapplymax/oeaobljpdipleeanlfjppmlokkajodbk)**
+
+✅ One-click installation
+✅ Automatic updates
+✅ Verified by Google
+
+</div>
+
+---
+
 <div align="center">
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/xWaCXBZbws)
