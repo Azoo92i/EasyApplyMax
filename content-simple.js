@@ -259,7 +259,7 @@ async function findAndClickDoneButton(contextElement = document, contextName = '
 
     if (clickSuccessful) {
       updateActivity();
-      await wait(1200); // Optimized job card click wait
+      await wait(700); // Ultra optimized job card click wait
       return { success: true, clicked: true };
     } else {
       return { success: false, clicked: false, reason: 'Click failed' };
@@ -605,7 +605,7 @@ async function mainLoop() {
         const link = job.querySelector('a');
         if (link) {
           await click(link);
-          await wait(1000); // Optimized job link wait
+          await wait(600); // Ultra optimized job link wait
         }
 
         // Chercher Easy Apply (Python ligne 1853)
@@ -618,7 +618,7 @@ async function mainLoop() {
         }
 
         await click(easyApplyBtn);
-        await wait(1200); // Optimized Easy Apply wait
+        await wait(800); // Ultra optimized Easy Apply wait
 
         // CRITICAL: Check for daily limit immediately after clicking Easy Apply
         // This catches the network error case where modal doesn't appear
@@ -860,7 +860,7 @@ async function mainLoop() {
               log(`Location filled: ${config.city}`);
 
               // Wait for autocomplete dropdown to appear
-              await wait(1500);
+              await wait(1000);
 
               // Try multiple selectors for autocomplete dropdown
               let dropdown = null;
@@ -1338,7 +1338,7 @@ async function mainLoop() {
 
               // Skip all waiting - application is done
               log('--- End of job processing, moving to next ---');
-              await wait(800); // Optimized wait before next job
+              await wait(500); // Ultra optimized wait before next job
               break;
             }
 
@@ -1376,7 +1376,7 @@ async function mainLoop() {
             // Application completed
             log('✅ Application completed, moving to next job');
             log('--- End of job processing ---');
-            await wait(800); // Optimized wait before next job
+            await wait(500); // Ultra optimized wait before next job
             break;
           }
         }
@@ -1407,7 +1407,7 @@ async function mainLoop() {
           if (nextPageBtn && nextPageBtn.offsetParent !== null) {
             log(`✅ Clique sur page ${currentPage + 1}`);
             await click(nextPageBtn);
-            await wait(1500); // Optimized page load wait
+            await wait(1000); // Ultra optimized page load wait
             nextPageClicked = true;
           }
         }
@@ -1436,7 +1436,7 @@ async function mainLoop() {
             if (isPaginationNext) {
               log('✅ Clique sur bouton Next');
               await click(btn);
-              await wait(1500); // Optimized page load wait
+              await wait(1000); // Ultra optimized page load wait
               nextPageClicked = true;
               break;
             }
@@ -1450,7 +1450,7 @@ async function mainLoop() {
         if (iconNextBtn && iconNextBtn.offsetParent !== null && !iconNextBtn.disabled) {
           log('✅ Clique sur bouton Next (icône)');
           await click(iconNextBtn);
-          await wait(1500); // Optimized page load wait
+          await wait(1000); // Ultra optimized page load wait
           nextPageClicked = true;
         }
       }

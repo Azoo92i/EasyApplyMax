@@ -153,13 +153,13 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 
     // Check if we're on LinkedIn
     if (!tab.url || !tab.url.includes('linkedin.com')) {
-      showToast('Please open a LinkedIn job search page first! (linkedin.com/jobs/search/)', 'warning', 6000);
+      showToast('Please open a LinkedIn jobs page first! (linkedin.com/jobs/...)', 'warning', 6000);
       return;
     }
 
     // Check if on job search page
     if (!tab.url.includes('/jobs/')) {
-      showToast('Please navigate to LinkedIn Jobs page first! (linkedin.com/jobs/search/)', 'warning', 6000);
+      showToast('Please navigate to LinkedIn Jobs page first! (linkedin.com/jobs/search/ or /jobs/collections/)', 'warning', 6000);
       return;
     }
 
