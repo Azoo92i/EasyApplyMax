@@ -69,7 +69,7 @@ async function loadConfig() {
   // Load common questions (with smart defaults)
   document.getElementById('visaSponsorship').value = config.visaSponsorship || 'no';
   document.getElementById('legallyAuthorized').value = config.legallyAuthorized || 'yes';
-  document.getElementById('willingToRelocate').value = config.willingToRelocate || 'no';
+  document.getElementById('willingToRelocate').value = config.willingToRelocate || 'yes';
   document.getElementById('driversLicense').value = config.driversLicense || 'yes';
 
   // Load resume if exists
