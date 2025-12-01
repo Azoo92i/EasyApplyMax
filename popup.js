@@ -46,7 +46,7 @@ function setupTabs() {
 async function loadConfig() {
   const config = await chrome.storage.sync.get([
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode', 'city',
-    'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'maxApplications', 'autoNextPage', 'expectedSalary',
+    'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'autoNextPage', 'expectedSalary',
     'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
   ]);
 
@@ -63,7 +63,6 @@ async function loadConfig() {
   document.getElementById('maxYearsRequired').value = config.maxYearsRequired || '3';
   document.getElementById('expectedSalary').value = config.expectedSalary || '';
   document.getElementById('blacklistKeywords').value = config.blacklistKeywords || '';
-  document.getElementById('maxApplications').value = config.maxApplications || '50';
   document.getElementById('autoNextPage').checked = config.autoNextPage !== false;
 
   // Load common questions (with smart defaults)
@@ -115,7 +114,6 @@ async function saveConfig() {
     maxYearsRequired: document.getElementById('maxYearsRequired').value,
     expectedSalary: document.getElementById('expectedSalary').value,
     blacklistKeywords: document.getElementById('blacklistKeywords').value,
-    maxApplications: document.getElementById('maxApplications').value,
     autoNextPage: document.getElementById('autoNextPage').checked,
     visaSponsorship: document.getElementById('visaSponsorship').value,
     legallyAuthorized: document.getElementById('legallyAuthorized').value,
@@ -132,7 +130,7 @@ async function saveConfig() {
 function setupAutoSave() {
   const inputFields = [
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-    'city', 'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords', 'maxApplications',
+    'city', 'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords',
     'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
   ];
 

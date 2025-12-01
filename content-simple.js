@@ -89,6 +89,16 @@ function checkDailyLimit() {
         log(`   ⏭️  Skipped: ${skippedCount}`);
         log('⏰ You can continue applying tomorrow!');
         log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        // Show visual notification to user
+        alert(`🚫 LinkedIn Daily Limit Reached!\n\n` +
+              `You've reached LinkedIn's daily Easy Apply limit (~50-100 applications).\n\n` +
+              `📊 Today's Stats:\n` +
+              `   ✅ Applied: ${appliedCount}\n` +
+              `   ⏭️  Skipped: ${skippedCount}\n\n` +
+              `⏰ You can continue applying tomorrow!\n\n` +
+              `The bot has been stopped automatically.`);
+
         return true;
       }
     }
@@ -1353,29 +1363,6 @@ async function mainLoop() {
             updateAppliedCount();
             saveAppliedJobsToStorage();
 
-            // Check if max applications reached
-            const maxApps = parseInt(config.maxApplications) || 50;
-            if (appliedCount >= maxApps) {
-              log(`🎯 MAX APPLICATIONS REACHED: ${appliedCount}/${maxApps}`);
-              log('🛑 Stopping bot automatically...');
-              isRunning = false;
-              userExplicitlyClickedStart = false; // Clear security flag
-
-              // Update storage
-              await chrome.storage.local.set({ isRunning: false });
-
-              // Notify popup that bot stopped
-              try {
-                chrome.runtime.sendMessage({ type: 'setRunning', value: false });
-              } catch (e) {
-                // Popup might be closed, ignore error
-              }
-
-              // Close any open modal before stopping
-              await discardApplication();
-              break; // Exit the main loop
-            }
-
             // OPTIMIZED: Check modal status immediately after Submit
             log('🔍 Checking if modal closed after Submit...');
             await wait(1000); // Short wait to let page process
@@ -1696,7 +1683,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === 'start') {
         config = await chrome.storage.sync.get([
           'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-          'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'maxApplications', 'expectedSalary',
+          'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'expectedSalary',
           'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
         ]);
 
