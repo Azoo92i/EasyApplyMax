@@ -503,6 +503,16 @@ async function mainLoop() {
   console.log('%c🔓 Click() and Fill() functions are now ENABLED', 'color: green; font-weight: bold;');
   console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: green; font-weight: bold;');
   log('🚀 ✅ ALL SECURITY CHECKS PASSED - Bot started by user');
+
+  // Detect page type
+  const currentUrl = window.location.href;
+  if (currentUrl.includes('/jobs/collections/')) {
+    log('📋 Page type: COLLECTIONS (infinite scroll mode)');
+  } else if (currentUrl.includes('/jobs/search/')) {
+    log('📋 Page type: SEARCH (pagination mode)');
+  } else {
+    log('📋 Page type: OTHER JOBS PAGE');
+  }
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   while (isRunning) {
@@ -540,7 +550,16 @@ async function mainLoop() {
       }
 
       // Python ligne 1695: job_listings = driver.find_elements(By.XPATH, "//li[@data-occludable-job-id]")
-      const jobCards = document.querySelectorAll('li[data-occludable-job-id]');
+      // Support both /jobs/search/ and /jobs/collections/ pages
+      let jobCards = document.querySelectorAll('li[data-occludable-job-id]');
+
+      // Fallback selectors for /jobs/collections/ page which may have different structure
+      if (jobCards.length === 0) {
+        jobCards = document.querySelectorAll('.jobs-search-results__list-item, .scaffold-layout__list-item, .job-card-container, [data-job-id]');
+        if (jobCards.length > 0) {
+          log(`📋 Using collections page selectors (found ${jobCards.length} jobs)`);
+        }
+      }
 
       if (jobCards.length === 0) {
         log(`Aucune offre trouvée. Attente 5s...`);
@@ -590,9 +609,10 @@ async function mainLoop() {
         }
 
         // Get job info for filtering
-        const jobTitle = job.querySelector('.job-card-list__title, .artdeco-entity-lockup__title')?.textContent.trim() || '';
-        const jobCompany = job.querySelector('.job-card-container__primary-description, .artdeco-entity-lockup__subtitle')?.textContent.trim() || '';
-        const jobDescription = job.querySelector('.job-card-container__metadata-item')?.textContent.trim() || '';
+        // Extended selectors to support both /jobs/search/ and /jobs/collections/ pages
+        const jobTitle = job.querySelector('.job-card-list__title, .artdeco-entity-lockup__title, .job-card-container__link, a[data-control-name="job_card_title"], .jobs-unified-top-card__job-title, [class*="job-title"], strong')?.textContent.trim() || '';
+        const jobCompany = job.querySelector('.job-card-container__primary-description, .artdeco-entity-lockup__subtitle, .job-card-container__company-name, [class*="company-name"], .artdeco-entity-lockup__caption, .jobs-unified-top-card__company-name')?.textContent.trim() || '';
+        const jobDescription = job.querySelector('.job-card-container__metadata-item, .job-card-list__insight, [class*="job-insight"], .jobs-unified-top-card__subtitle-primary-grouping')?.textContent.trim() || '';
 
         // Check blacklist keywords
         if (shouldSkipByBlacklist(jobTitle, jobCompany, jobDescription, config.blacklistKeywords)) {
@@ -619,7 +639,27 @@ async function mainLoop() {
         }
 
         // Chercher Easy Apply (Python ligne 1853)
-        const easyApplyBtn = document.querySelector('button.jobs-apply-button[aria-label*="Easy"]');
+        // Extended selectors to support both /jobs/search/ and /jobs/collections/ pages
+        let easyApplyBtn = document.querySelector('button.jobs-apply-button[aria-label*="Easy"]');
+
+        // Fallback selectors for collections page
+        if (!easyApplyBtn) {
+          easyApplyBtn = document.querySelector('button.jobs-apply-button, button[aria-label*="Easy Apply"], .jobs-apply-button--top-card, button[data-job-id][aria-label*="Easy"]');
+        }
+
+        // Additional fallback: look for any button containing "Easy Apply" text
+        if (!easyApplyBtn) {
+          const allButtons = document.querySelectorAll('button');
+          for (let btn of allButtons) {
+            const btnText = btn.textContent.toLowerCase();
+            const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
+            if ((btnText.includes('easy apply') || ariaLabel.includes('easy apply')) && btn.offsetParent !== null) {
+              easyApplyBtn = btn;
+              break;
+            }
+          }
+        }
+
         if (!easyApplyBtn) {
           log('Pas Easy Apply, skip');
           skippedCount++;
@@ -1426,26 +1466,71 @@ async function mainLoop() {
       }
 
       // Page suivante (Python ligne 2047) - IMPROVED WITH FALLBACKS
-      log('🔍 Recherche page suivante...');
+      // Supports both classic pagination (/jobs/search/) and infinite scroll (/jobs/collections/)
+      log('🔍 Recherche page suivante ou scroll...');
       let nextPageClicked = false;
 
-      // METHOD 1: Try pagination by page number
-      const pagination = document.querySelector('.jobs-search-pagination__pages');
-      if (pagination) {
-        const activeBtn = pagination.querySelector('button.active, button[aria-current="true"], li.active button, li.selected button');
-        if (activeBtn) {
-          const currentPage = parseInt(activeBtn.textContent);
-          log(`📄 Page actuelle: ${currentPage}`);
+      // Detect if we're on a collections page (uses infinite scroll)
+      const isCollectionsPage = window.location.href.includes('/jobs/collections/');
 
-          // Try to find next page button
-          const nextPageBtn = pagination.querySelector(`button[aria-label="Page ${currentPage + 1}"]`) ||
-                             pagination.querySelector(`button[data-test-pagination-page-btn="${currentPage + 1}"]`);
+      // METHOD 0: Infinite scroll for collections page
+      if (isCollectionsPage) {
+        log('📜 Collections page detected - using infinite scroll');
 
-          if (nextPageBtn && nextPageBtn.offsetParent !== null) {
-            log(`✅ Clique sur page ${currentPage + 1}`);
-            await click(nextPageBtn);
-            await wait(1000); // Ultra optimized page load wait
+        // Get the job list container
+        const jobListContainer = document.querySelector('.jobs-search-results-list, .scaffold-layout__list-container, .jobs-search-results__list');
+
+        if (jobListContainer) {
+          // Remember current job count before scrolling
+          const currentJobCount = document.querySelectorAll('li[data-occludable-job-id], .jobs-search-results__list-item, .scaffold-layout__list-item, .job-card-container, [data-job-id]').length;
+
+          // Scroll to bottom of the job list to trigger loading more jobs
+          jobListContainer.scrollTo({
+            top: jobListContainer.scrollHeight,
+            behavior: 'smooth'
+          });
+
+          // Also scroll the main window in case the list is in window scroll
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+          });
+
+          log('📜 Scrolled down to load more jobs...');
+          await wait(2000); // Wait for new jobs to load
+
+          // Check if new jobs were loaded
+          const newJobCount = document.querySelectorAll('li[data-occludable-job-id], .jobs-search-results__list-item, .scaffold-layout__list-item, .job-card-container, [data-job-id]').length;
+
+          if (newJobCount > currentJobCount) {
+            log(`✅ Loaded ${newJobCount - currentJobCount} more jobs (total: ${newJobCount})`);
             nextPageClicked = true;
+          } else {
+            log('📋 No more jobs to load (reached end of list)');
+            // Don't break here - let pagination methods try as well
+          }
+        }
+      }
+
+      // METHOD 1: Try pagination by page number (for /jobs/search/)
+      if (!nextPageClicked) {
+        const pagination = document.querySelector('.jobs-search-pagination__pages');
+        if (pagination) {
+          const activeBtn = pagination.querySelector('button.active, button[aria-current="true"], li.active button, li.selected button');
+          if (activeBtn) {
+            const currentPage = parseInt(activeBtn.textContent);
+            log(`📄 Page actuelle: ${currentPage}`);
+
+            // Try to find next page button
+            const nextPageBtn = pagination.querySelector(`button[aria-label="Page ${currentPage + 1}"]`) ||
+                               pagination.querySelector(`button[data-test-pagination-page-btn="${currentPage + 1}"]`);
+
+            if (nextPageBtn && nextPageBtn.offsetParent !== null) {
+              log(`✅ Clique sur page ${currentPage + 1}`);
+              await click(nextPageBtn);
+              await wait(1000); // Ultra optimized page load wait
+              nextPageClicked = true;
+            }
           }
         }
       }
@@ -1488,6 +1573,23 @@ async function mainLoop() {
           log('✅ Clique sur bouton Next (icône)');
           await click(iconNextBtn);
           await wait(1000); // Ultra optimized page load wait
+          nextPageClicked = true;
+        }
+      }
+
+      // METHOD 4: Last resort scroll for any page type (if all else fails)
+      if (!nextPageClicked && !isCollectionsPage) {
+        log('📜 Trying scroll as last resort...');
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: 'smooth'
+        });
+        await wait(2000);
+
+        // Check if scrolling helped
+        const newJobCards = document.querySelectorAll('li[data-occludable-job-id], .jobs-search-results__list-item, .scaffold-layout__list-item, .job-card-container, [data-job-id]');
+        if (newJobCards.length > jobCards.length) {
+          log('✅ Found more jobs after scrolling');
           nextPageClicked = true;
         }
       }
@@ -1570,8 +1672,9 @@ function shouldSkipByExperience(jobCard, maxYearsRequired) {
 
   try {
     // Chercher dans le titre et la description visible
-    const title = jobCard.querySelector('.job-card-list__title, .artdeco-entity-lockup__title')?.textContent || '';
-    const subtitle = jobCard.querySelector('.job-card-container__metadata-item')?.textContent || '';
+    // Extended selectors to support both /jobs/search/ and /jobs/collections/ pages
+    const title = jobCard.querySelector('.job-card-list__title, .artdeco-entity-lockup__title, .job-card-container__link, a[data-control-name="job_card_title"], .jobs-unified-top-card__job-title, [class*="job-title"], strong')?.textContent || '';
+    const subtitle = jobCard.querySelector('.job-card-container__metadata-item, .job-card-list__insight, [class*="job-insight"], .jobs-unified-top-card__subtitle-primary-grouping')?.textContent || '';
     const combinedText = title + ' ' + subtitle;
 
     const yearsRequired = extractYearsRequired(combinedText);
@@ -1774,13 +1877,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-console.log('%c🔒 EASYAPPLYMAX v1.3.1 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
+console.log('%c🔒 EASYAPPLYMAX v1.5.0 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
 console.log('%c✅ Script injected ONLY when you clicked START', 'color: green; font-weight: bold;');
 console.log('%c🔒 NO automatic loading on LinkedIn pages', 'color: green; font-weight: bold;');
 console.log('%c🚀 Bot will start automatically after injection', 'color: orange; font-weight: bold;');
+console.log('%c📋 Supports: /jobs/search/ AND /jobs/collections/', 'color: cyan; font-weight: bold;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-log('Script loaded v1.3.1 - SECURITY: Manual injection mode - Script ONLY loaded when you click START');
+log('Script loaded v1.5.0 - SECURITY: Manual injection mode - Script ONLY loaded when you click START');
 
 // SECURITY: Clear ALL running state on page load to prevent auto-start
 // Bot will ONLY start when user explicitly clicks "Start" button
