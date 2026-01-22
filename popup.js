@@ -401,7 +401,7 @@ async function loadAppliedJobs() {
       listContainer.innerHTML = `
         <div class="empty-state">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 6H16V4C16 2.89543 15.1046 2 14 2H10C8.89543 2 8 4V6H4C2.89543 6 2 6.89543 2 8V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V8C22 6.89543 21.1046 6 20 6Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M20 6H16V4C16 2.89543 15.1046 2 14 2H10C8.89543 2 8 2.89543 8 4V6H4C2.89543 6 2 6.89543 2 8V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V8C22 6.89543 21.1046 6 20 6Z" stroke="currentColor" stroke-width="2"/>
             <path d="M8 6V4H16V6" stroke="currentColor" stroke-width="2"/>
             <path d="M12 11V17M9 14H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>

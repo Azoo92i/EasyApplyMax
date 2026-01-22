@@ -76,7 +76,7 @@ function showToast(message, type = 'info', duration = 4000) {
         color: #1e293b;
         line-height: 1.4;
       ">${message}</div>
-      <button onclick="this.closest('.toast').remove()" style="
+      <button class="toast-close" style="
         background: none;
         border: none;
         color: #94a3b8;
@@ -94,6 +94,12 @@ function showToast(message, type = 'info', duration = 4000) {
 
   // Ajouter au container
   toastContainer.appendChild(toast);
+
+  // Add close button listener (no inline handler for CSP compliance)
+  const closeBtn = toast.querySelector('.toast-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => toast.remove());
+  }
 
   // Auto-remove après duration
   setTimeout(() => {
@@ -402,7 +408,7 @@ function showOnboarding() {
         font-weight: 600;
         cursor: pointer;
         transition: transform 0.2s;
-      " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+      ">
         Got it, let's start!
       </button>
     </div>
@@ -419,9 +425,16 @@ function showOnboarding() {
         from { opacity: 0; }
         to { opacity: 1; }
       }
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
       @keyframes scaleIn {
         from { transform: scale(0.9); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
+      }
+      #close-onboarding:hover {
+        transform: scale(1.02);
       }
     `;
     document.head.appendChild(style);
@@ -432,8 +445,6 @@ function showOnboarding() {
     await chrome.storage.local.set({ onboardingCompleted: true });
     overlay.style.animation = 'fadeOut 0.3s ease-out';
     setTimeout(() => overlay.remove(), 300);
-
-    showToast('Welcome aboard! Fill your info and click Start on LinkedIn Jobs page.', 'success', 6000);
   });
 }
 

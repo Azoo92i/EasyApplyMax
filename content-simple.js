@@ -503,6 +503,14 @@ async function mainLoop() {
   console.log('%c🔓 Click() and Fill() functions are now ENABLED', 'color: green; font-weight: bold;');
   console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: green; font-weight: bold;');
   log('🚀 ✅ ALL SECURITY CHECKS PASSED - Bot started by user');
+
+  // Detect page type ONCE at start
+  const isCollectionsPage = window.location.href.includes('/jobs/collections/');
+  if (isCollectionsPage) {
+    log('📋 Page type: COLLECTIONS (infinite scroll mode)');
+  } else {
+    log('📋 Page type: SEARCH (pagination mode)');
+  }
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   while (isRunning) {
@@ -540,7 +548,15 @@ async function mainLoop() {
       }
 
       // Python ligne 1695: job_listings = driver.find_elements(By.XPATH, "//li[@data-occludable-job-id]")
-      const jobCards = document.querySelectorAll('li[data-occludable-job-id]');
+      let jobCards = document.querySelectorAll('li[data-occludable-job-id]');
+
+      // ONLY on collections page: use fallback selectors if no jobs found with standard selector
+      if (jobCards.length === 0 && isCollectionsPage) {
+        jobCards = document.querySelectorAll('.jobs-search-results__list-item, .scaffold-layout__list-item');
+        if (jobCards.length > 0) {
+          log(`📋 Collections mode: found ${jobCards.length} jobs with fallback selectors`);
+        }
+      }
 
       if (jobCards.length === 0) {
         log(`Aucune offre trouvée. Attente 5s...`);
@@ -590,9 +606,18 @@ async function mainLoop() {
         }
 
         // Get job info for filtering
-        const jobTitle = job.querySelector('.job-card-list__title, .artdeco-entity-lockup__title')?.textContent.trim() || '';
-        const jobCompany = job.querySelector('.job-card-container__primary-description, .artdeco-entity-lockup__subtitle')?.textContent.trim() || '';
-        const jobDescription = job.querySelector('.job-card-container__metadata-item')?.textContent.trim() || '';
+        // Use extended selectors ONLY on collections page
+        let jobTitle, jobCompany, jobDescription;
+        if (isCollectionsPage) {
+          jobTitle = job.querySelector('.job-card-list__title, .artdeco-entity-lockup__title, .job-card-container__link strong, a[class*="job-card"] strong')?.textContent.trim() || '';
+          jobCompany = job.querySelector('.job-card-container__primary-description, .artdeco-entity-lockup__subtitle, .artdeco-entity-lockup__caption')?.textContent.trim() || '';
+          jobDescription = job.querySelector('.job-card-container__metadata-item, .job-card-list__insight')?.textContent.trim() || '';
+        } else {
+          // Standard selectors for /jobs/search/
+          jobTitle = job.querySelector('.job-card-list__title, .artdeco-entity-lockup__title')?.textContent.trim() || '';
+          jobCompany = job.querySelector('.job-card-container__primary-description, .artdeco-entity-lockup__subtitle')?.textContent.trim() || '';
+          jobDescription = job.querySelector('.job-card-container__metadata-item')?.textContent.trim() || '';
+        }
 
         // Check blacklist keywords
         if (shouldSkipByBlacklist(jobTitle, jobCompany, jobDescription, config.blacklistKeywords)) {
@@ -619,7 +644,17 @@ async function mainLoop() {
         }
 
         // Chercher Easy Apply (Python ligne 1853)
-        const easyApplyBtn = document.querySelector('button.jobs-apply-button[aria-label*="Easy"]');
+        let easyApplyBtn = document.querySelector('button.jobs-apply-button[aria-label*="Easy"]');
+
+        // ONLY on collections page: try additional selectors if not found
+        if (!easyApplyBtn && isCollectionsPage) {
+          // Try other Easy Apply selectors (must contain "Easy" to avoid external Apply)
+          easyApplyBtn = document.querySelector('button[aria-label*="Easy Apply"]');
+          if (easyApplyBtn) {
+            log('📋 Found Easy Apply with collections selector');
+          }
+        }
+
         if (!easyApplyBtn) {
           log('Pas Easy Apply, skip');
           skippedCount++;
@@ -922,8 +957,79 @@ async function mainLoop() {
             }
           }
 
-          // 2. FILE INPUTS (Resume/CV Upload)
-          if (resumeFile && resumeFileName && resumeFileType) {
+          // 2. FILE INPUTS (Resume/CV Upload) - SMART: Select existing or upload once
+          // LinkedIn remembers previously uploaded CVs - we should select those instead of re-uploading
+
+          // STEP 2a: First, try to select an existing/previously uploaded resume
+          let resumeAlreadySelected = false;
+
+          // Look for resume selection cards/radio buttons (LinkedIn shows previously uploaded resumes)
+          const resumeSelectors = [
+            // Radio buttons for resume selection
+            'input[type="radio"][name*="resume"]',
+            'input[type="radio"][name*="cv"]',
+            'input[type="radio"][id*="resume"]',
+            'input[type="radio"][id*="document"]',
+            // Clickable resume cards
+            '[data-test-document-upload-item]',
+            '.jobs-document-upload-redesign-card',
+            '.jobs-document-upload__container',
+            '.document-upload-item',
+            // Resume list items
+            '[class*="resume-card"]',
+            '[class*="document-card"]'
+          ];
+
+          for (let selector of resumeSelectors) {
+            const resumeOptions = modal.querySelectorAll(selector);
+            if (resumeOptions.length > 0) {
+              // Find the first/most recent resume option
+              for (let option of resumeOptions) {
+                if (option.offsetParent !== null) { // Visible
+                  // For radio buttons
+                  if (option.type === 'radio') {
+                    if (!option.checked) {
+                      const label = modal.querySelector(`label[for="${option.id}"]`);
+                      if (label) {
+                        label.click();
+                        log(`✅ Selected existing resume: ${label.textContent.substring(0, 40)}`);
+                      } else {
+                        option.click();
+                        log(`✅ Selected existing resume (radio)`);
+                      }
+                      resumeAlreadySelected = true;
+                      await wait(500);
+                      break;
+                    } else {
+                      log(`✅ Resume already selected`);
+                      resumeAlreadySelected = true;
+                      break;
+                    }
+                  } else {
+                    // For clickable cards - click if not already selected
+                    const isSelected = option.classList.contains('selected') ||
+                                      option.getAttribute('aria-selected') === 'true' ||
+                                      option.querySelector('input[type="radio"]:checked');
+                    if (!isSelected) {
+                      option.click();
+                      log(`✅ Selected existing resume card`);
+                      resumeAlreadySelected = true;
+                      await wait(500);
+                      break;
+                    } else {
+                      log(`✅ Resume card already selected`);
+                      resumeAlreadySelected = true;
+                      break;
+                    }
+                  }
+                }
+              }
+              if (resumeAlreadySelected) break;
+            }
+          }
+
+          // STEP 2b: If no existing resume found/selected, upload new one (only once per session)
+          if (!resumeAlreadySelected && resumeFile && resumeFileName && resumeFileType) {
             const fileInputs = modal.querySelectorAll('input[type="file"]');
 
             for (let fileInput of fileInputs) {
@@ -953,7 +1059,7 @@ async function mainLoop() {
               const isResumeInput = label.match(/resume|cv|curriculum|vitae|upload.*document|file/);
 
               if (isResumeInput) {
-                log(`📎 File input detected: ${labelText.substring(0, 50)}`);
+                log(`📎 File input detected (no existing resume found): ${labelText.substring(0, 50)}`);
 
                 // Convert base64 to File object
                 const file = base64ToFile(resumeFile, resumeFileName, resumeFileType);
@@ -962,7 +1068,7 @@ async function mainLoop() {
                   const success = await fillFileInput(fileInput, file);
 
                   if (success) {
-                    log(`✅ Resume uploaded successfully to form`);
+                    log(`✅ Resume uploaded successfully (first time upload)`);
                     await wait(500); // Wait for LinkedIn to process the upload
                   } else {
                     log(`⚠️ Failed to upload resume to file input`);
@@ -974,8 +1080,8 @@ async function mainLoop() {
                 log(`⏭️ Skipping file input (not resume): ${labelText.substring(0, 50)}`);
               }
             }
-          } else if (modal.querySelector('input[type="file"]')) {
-            // File input found but no resume uploaded
+          } else if (!resumeAlreadySelected && modal.querySelector('input[type="file"]')) {
+            // File input found but no resume uploaded in extension
             const fileInputsCount = modal.querySelectorAll('input[type="file"]').length;
             log(`⚠️ ${fileInputsCount} file input(s) found but no resume uploaded in extension`);
             log(`   Upload your resume in the extension popup to auto-fill file uploads`);
@@ -1429,23 +1535,55 @@ async function mainLoop() {
       log('🔍 Recherche page suivante...');
       let nextPageClicked = false;
 
+      // COLLECTIONS PAGE: Use infinite scroll instead of pagination
+      if (isCollectionsPage) {
+        log('📜 Collections page - using infinite scroll');
+
+        // Get the job list container
+        const jobListContainer = document.querySelector('.jobs-search-results-list, .scaffold-layout__list-container, .jobs-search-results__list');
+
+        if (jobListContainer) {
+          const currentJobCount = jobCards.length;
+
+          // Scroll to bottom to trigger loading more jobs
+          jobListContainer.scrollTo({ top: jobListContainer.scrollHeight, behavior: 'smooth' });
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+          log('📜 Scrolled down to load more jobs...');
+          await wait(2000);
+
+          // Check if new jobs were loaded
+          const newJobCount = document.querySelectorAll('li[data-occludable-job-id], .jobs-search-results__list-item, .scaffold-layout__list-item').length;
+
+          if (newJobCount > currentJobCount) {
+            log(`✅ Loaded ${newJobCount - currentJobCount} more jobs (total: ${newJobCount})`);
+            nextPageClicked = true;
+          } else {
+            log('📋 No more jobs to load (reached end of collection)');
+          }
+        }
+      }
+
+      // SEARCH PAGE: Use standard pagination
       // METHOD 1: Try pagination by page number
       const pagination = document.querySelector('.jobs-search-pagination__pages');
-      if (pagination) {
-        const activeBtn = pagination.querySelector('button.active, button[aria-current="true"], li.active button, li.selected button');
-        if (activeBtn) {
-          const currentPage = parseInt(activeBtn.textContent);
-          log(`📄 Page actuelle: ${currentPage}`);
+      if (!nextPageClicked) {
+        if (pagination) {
+          const activeBtn = pagination.querySelector('button.active, button[aria-current="true"], li.active button, li.selected button');
+          if (activeBtn) {
+            const currentPage = parseInt(activeBtn.textContent);
+            log(`📄 Page actuelle: ${currentPage}`);
 
-          // Try to find next page button
-          const nextPageBtn = pagination.querySelector(`button[aria-label="Page ${currentPage + 1}"]`) ||
-                             pagination.querySelector(`button[data-test-pagination-page-btn="${currentPage + 1}"]`);
+            // Try to find next page button
+            const nextPageBtn = pagination.querySelector(`button[aria-label="Page ${currentPage + 1}"]`) ||
+                               pagination.querySelector(`button[data-test-pagination-page-btn="${currentPage + 1}"]`);
 
-          if (nextPageBtn && nextPageBtn.offsetParent !== null) {
-            log(`✅ Clique sur page ${currentPage + 1}`);
-            await click(nextPageBtn);
-            await wait(1000); // Ultra optimized page load wait
-            nextPageClicked = true;
+            if (nextPageBtn && nextPageBtn.offsetParent !== null) {
+              log(`✅ Clique sur page ${currentPage + 1}`);
+              await click(nextPageBtn);
+              await wait(1000); // Ultra optimized page load wait
+              nextPageClicked = true;
+            }
           }
         }
       }
@@ -1774,13 +1912,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-console.log('%c🔒 EASYAPPLYMAX v1.3.1 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
+console.log('%c🔒 EASYAPPLYMAX v1.5.0 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
 console.log('%c✅ Script injected ONLY when you clicked START', 'color: green; font-weight: bold;');
 console.log('%c🔒 NO automatic loading on LinkedIn pages', 'color: green; font-weight: bold;');
 console.log('%c🚀 Bot will start automatically after injection', 'color: orange; font-weight: bold;');
+console.log('%c📋 Supports: /jobs/search/ AND /jobs/collections/', 'color: cyan; font-weight: bold;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-log('Script loaded v1.3.1 - SECURITY: Manual injection mode - Script ONLY loaded when you click START');
+log('Script loaded v1.5.0 - Supports /jobs/search/ and /jobs/collections/');
 
 // SECURITY: Clear ALL running state on page load to prevent auto-start
 // Bot will ONLY start when user explicitly clicks "Start" button

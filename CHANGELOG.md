@@ -2,6 +2,22 @@
 
 All notable changes to EasyApplyMax will be documented in this file.
 
+## [v1.5.0] - 2026-01-15
+
+### ✨ New Features
+- **LinkedIn Collections Support** - Now works on `/jobs/collections/` pages (saved jobs, recommended jobs, etc.) with infinite scroll
+- **Smart Resume Selection** - Now selects existing/previously uploaded CV instead of re-uploading for each application. Only uploads once (first application), then reuses the CV.
+
+### 🐛 Bug Fixes
+- Removed redundant "Welcome aboard!" toast message after onboarding
+- Fixed fadeOut animation for onboarding overlay closure
+- Fixed resume being uploaded for every single application (now uploads once, then selects existing)
+
+### 🔧 Technical Improvements
+- Collections support uses conditional selectors (only on collections pages, doesn't affect search pages)
+- Infinite scroll pagination for collections pages
+- Standard pagination preserved for search pages
+
 ## [v1.0.0] - 2024-10-28
 
 ### 🎉 Initial Release
