@@ -56,6 +56,19 @@ const PATTERNS = {
     'verwerfen', 'abbrechen', 'schließen', 'scartare', 'annullare', 'chiudere'
   ],
 
+  // Close/Dismiss button aria-labels (for modal close buttons)
+  closeButtonLabels: [
+    'Dismiss', 'Close', 'Fechar', 'Dispensar', 'Cerrar', 'Descartar',
+    'Fermer', 'Ignorer', 'Schließen', 'Chiudi', 'Annulla'
+  ],
+
+  // Pagination next button aria-labels
+  paginationNext: [
+    'Next', 'Próximo', 'Próxima', 'Siguiente', 'Suivant', 'Weiter', 'Avanti',
+    'View next page', 'Ver próxima página', 'Ver siguiente página',
+    'Page suivante', 'Nächste Seite', 'Pagina successiva'
+  ],
+
   // Next/Review/Continue button text
   nextButtons: [
     'next', 'review', 'continue',
@@ -421,7 +434,9 @@ async function discardApplication() {
 
     // STEP 1: Force close with X button (MOST RELIABLE METHOD - moved to first)
     log('🔍 STEP 1: Looking for X/Close button...');
-    const closeButtons = document.querySelectorAll('button[aria-label*="Dismiss"], button[aria-label*="Close"], button.artdeco-modal__dismiss');
+    // Build multilingual selector for close buttons
+    const closeSelectors = PATTERNS.closeButtonLabels.map(label => `button[aria-label*="${label}"]`).join(', ');
+    const closeButtons = document.querySelectorAll(`${closeSelectors}, button.artdeco-modal__dismiss`);
 
     for (let btn of closeButtons) {
       if (btn.offsetParent) {
@@ -644,7 +659,9 @@ RULES:
 4. If asking about years of experience with specific tech, give a realistic number based on total experience
 5. If you don't have enough info, make reasonable assumptions based on the profile
 6. NEVER say "I don't know" - always provide a helpful answer
-7. Always reply in ${responseLanguage}`;
+7. Always reply in ${responseLanguage}
+8. IMPORTANT: For salary, compensation, or any monetary value questions, respond with ONLY numbers (e.g., "50000" not "R$ 50.000" or "$50,000"). No currency symbols, no dots, no commas, no spaces - just the raw number.
+9. For numeric fields (years, quantity, percentage), respond with ONLY the number without any text or symbols`;
 
   const userPrompt = `Application Question: "${question}"
 ${context.fieldType ? `Field Type: ${context.fieldType}` : ''}
@@ -679,9 +696,22 @@ Provide a direct answer suitable for this form field:`;
     }
 
     const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content?.trim();
+    let answer = data.choices?.[0]?.message?.content?.trim();
 
     if (answer) {
+      // Clean numeric answers (salary, years, etc.) - remove currency symbols, dots, commas, spaces
+      const isNumericQuestion = context.fieldType === 'number' ||
+        /salary|salário|sueldo|compensation|remuneration|rémunération|years|anos|años|quantity|quantidade|percentage|porcentagem/i.test(question);
+
+      if (isNumericQuestion) {
+        // Extract only digits from the answer
+        const numericValue = answer.replace(/[^\d]/g, '');
+        if (numericValue) {
+          answer = numericValue;
+          log(`🔢 Cleaned numeric answer: "${answer}"`);
+        }
+      }
+
       log(`✅ Groq response: "${answer.substring(0, 50)}..."`);
       // Save to cache for future use
       await saveAnswerToCache(question, answer);
@@ -709,6 +739,94 @@ async function getAIAnswer(question, context = {}) {
 
   // If not in cache, call API
   return await callGroqAPI(question, context);
+}
+
+// AI function to select the best option from a dropdown
+async function getAIDropdownSelection(question, options) {
+  if (!enableAI || !groqApiKey) {
+    return null;
+  }
+
+  // Build options list for AI
+  const optionsList = options.map((opt, i) => `${i + 1}. ${opt}`).join('\n');
+
+  const systemPrompt = `You are an AI assistant helping to fill out job application forms.
+You must select the BEST option from a dropdown menu for the given question.
+
+CANDIDATE PROFILE:
+- Name: ${config.firstName || ''} ${config.lastName || ''}
+- Email: ${config.email || ''}
+- Location: ${config.city || ''}
+- Years of Experience: ${config.yearsOfExperience || ''}
+- Skills: ${skills || 'Not specified'}
+- Professional Summary: ${professionalSummary || 'Not provided'}
+- English Level: ${config.englishLevel || 'advanced'}
+- Visa Sponsorship Needed: ${config.visaSponsorship || 'no'}
+- Legally Authorized to Work: ${config.legallyAuthorized || 'yes'}
+- Willing to Relocate: ${config.willingToRelocate || 'yes'}
+- Has Driver's License: ${config.driversLicense || 'yes'}
+- Disability Status: ${config.disabilityStatus || 'no'}
+
+RULES:
+1. Respond with ONLY the number of the best option (e.g., "1" or "3")
+2. Choose the most appropriate option based on the candidate profile
+3. If the question is about experience level, choose based on years of experience
+4. If unsure, prefer positive/affirmative options
+5. Never respond with text, only the option number
+6. If options include "Select...", "Choose...", or similar placeholders, skip those`;
+
+  const userPrompt = `Question: "${question}"
+
+Available options:
+${optionsList}
+
+Which option number should I select? (respond with only the number)`;
+
+  try {
+    log(`🤖 AI selecting dropdown for: "${question.substring(0, 50)}..."`);
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${groqApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 10
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      log(`❌ Groq API error: ${response.status} - ${error}`);
+      return null;
+    }
+
+    const data = await response.json();
+    const answer = data.choices?.[0]?.message?.content?.trim();
+
+    if (answer) {
+      // Parse the number from the response
+      const optionNumber = parseInt(answer.replace(/\D/g, ''));
+      if (optionNumber > 0 && optionNumber <= options.length) {
+        log(`✅ AI selected option ${optionNumber}: "${options[optionNumber - 1].substring(0, 30)}..."`);
+        // Cache this selection for future similar questions
+        await saveAnswerToCache(question, options[optionNumber - 1]);
+        return optionNumber - 1; // Return 0-based index
+      }
+    }
+
+    return null;
+  } catch (error) {
+    log(`❌ AI dropdown selection failed: ${error.message}`);
+    return null;
+  }
 }
 
 // Save any filled answer to cache (for learning from user's manual inputs)
@@ -1779,9 +1897,28 @@ async function mainLoop() {
               log(`Dropdown language: ${selectedOption ? selectedOption.text : 'fallback'}`);
             }
 
-            // Si pas trouvé, prendre option 1 (pas 0 car souvent "Select...")
+            // AI FALLBACK: If no pattern matched, use AI to select the best option
+            if (!selectedOption && enableAI && groqApiKey && options.length > 1) {
+              log(`🤖 No pattern matched for dropdown, asking AI: "${labelText.substring(0, 50)}..."`);
+
+              // Get option texts for AI (skip placeholder options)
+              const skipPatterns = /^(select|choose|choisir|selecione|seleccione|seleccionar|elegir|wählen|scegli|--)/i;
+              const validOptions = options.filter(opt => opt.text && !skipPatterns.test(opt.text.trim()));
+              const optionTexts = validOptions.map(opt => opt.text.trim());
+
+              if (optionTexts.length > 0) {
+                const aiSelectedIndex = await getAIDropdownSelection(labelText.trim(), optionTexts);
+                if (aiSelectedIndex !== null && aiSelectedIndex >= 0) {
+                  selectedOption = validOptions[aiSelectedIndex];
+                  log(`🤖 AI selected: "${selectedOption.text}"`);
+                }
+              }
+            }
+
+            // Last resort fallback: take option 1 (not 0 as it's often "Select...")
             if (!selectedOption && options.length > 1) {
               selectedOption = options[1];
+              log(`⚠️ Fallback: selecting first non-placeholder option`);
             }
 
             if (selectedOption) {
@@ -1843,10 +1980,31 @@ async function mainLoop() {
                   log(`Custom dropdown language: ${selectedOption ? selectedOption.textContent.substring(0, 30) : 'fallback'}`);
                 }
 
-                // If no smart match, take first valid option (not "Select...", "Selecione...", etc.)
+                // AI FALLBACK: If no pattern matched, use AI to select the best option
+                if (!selectedOption && enableAI && groqApiKey) {
+                  log(`🤖 No pattern matched for custom dropdown, asking AI: "${questionText.substring(0, 50)}..."`);
+
+                  // Get option texts for AI (skip placeholder options)
+                  const skipPatternsAI = /^(select|choose|choisir|selecione|seleccione|seleccionar|elegir|wählen|scegli|--)/i;
+                  const validOptions = options.filter(opt => opt.textContent && !skipPatternsAI.test(opt.textContent.trim()));
+                  const optionTexts = validOptions.map(opt => opt.textContent.trim());
+
+                  if (optionTexts.length > 0) {
+                    const aiSelectedIndex = await getAIDropdownSelection(questionText.trim(), optionTexts);
+                    if (aiSelectedIndex !== null && aiSelectedIndex >= 0) {
+                      selectedOption = validOptions[aiSelectedIndex];
+                      log(`🤖 AI selected: "${selectedOption.textContent.substring(0, 30)}"`);
+                    }
+                  }
+                }
+
+                // Last resort: take first valid option (not "Select...", "Selecione...", etc.)
                 if (!selectedOption) {
                   const skipPatterns = /^(select|choose|choisir|selecione|seleccione|seleccionar|elegir|wählen|scegli)/i;
                   selectedOption = options.find(opt => !skipPatterns.test(opt.textContent.trim()));
+                  if (selectedOption) {
+                    log(`⚠️ Fallback: selecting first non-placeholder option`);
+                  }
                 }
 
                 if (selectedOption) {
@@ -2153,9 +2311,18 @@ async function mainLoop() {
         }
       }
 
-      // METHOD 3: Try icon-based next button (LinkedIn uses icons)
+      // METHOD 3: Try icon-based next button (LinkedIn uses icons) - MULTILINGUAL
       if (!nextPageClicked) {
-        const iconNextBtn = document.querySelector('.jobs-search-pagination button[aria-label*="Next"], .jobs-search-pagination button svg[class*="chevron-right"]')?.closest('button');
+        // Build multilingual selector for pagination next buttons
+        let iconNextBtn = null;
+        for (const label of PATTERNS.paginationNext) {
+          iconNextBtn = document.querySelector(`.jobs-search-pagination button[aria-label*="${label}"]`);
+          if (iconNextBtn) break;
+        }
+        // Fallback to icon-based detection
+        if (!iconNextBtn) {
+          iconNextBtn = document.querySelector('.jobs-search-pagination button svg[class*="chevron-right"]')?.closest('button');
+        }
         if (iconNextBtn && iconNextBtn.offsetParent !== null && !iconNextBtn.disabled) {
           log('✅ Clique sur bouton Next (icône)');
           await click(iconNextBtn);
