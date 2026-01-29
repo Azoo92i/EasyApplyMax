@@ -5,7 +5,8 @@ Ce dossier contient la Privacy Policy hébergée sur **GitHub Pages**.
 ## 🌐 URL Finale
 
 Une fois GitHub Pages activé, votre Privacy Policy sera accessible à :
-```
+
+```txt
 https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
 ```
 
@@ -64,6 +65,7 @@ docs/
 Lorsque vous soumettez l'extension sur le Chrome Web Store, utilisez cette URL :
 
 **Privacy Policy URL :**
+
 ```
 https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
 ```
@@ -122,11 +124,13 @@ Pour mettre à jour la Privacy Policy :
 1. Modifiez `privacy-policy.html`
 2. Mettez à jour la date "Last Updated"
 3. Commit et push :
+
    ```bash
    git add docs/privacy-policy.html
    git commit -m "Update privacy policy"
    git push origin main
    ```
+
 4. GitHub Pages se met à jour automatiquement (1-2 minutes)
 
 ---
@@ -138,11 +142,11 @@ Si GitHub Pages ne fonctionne pas :
 1. Vérifiez que le dossier `docs/` est bien dans la branche `main`
 2. Vérifiez Settings > Pages > Source = `main` + `/docs`
 3. Attendez 2-3 minutes après activation
-4. Consultez la documentation : https://docs.github.com/pages
+4. Consultez la documentation : <https://docs.github.com/pages>
 
 ---
 
-## 🎉 C'est Tout !
+## 🎉 C'est Tout
 
 Votre Privacy Policy est maintenant hébergée professionnellement sur GitHub Pages, gratuitement ! 🚀
 
