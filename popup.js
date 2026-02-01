@@ -6,11 +6,15 @@ async function loadRunningState() {
   const local = await chrome.storage.local.get(['isRunning']);
   isRunning = local.isRunning || false;
   updateButtons();
-  updateStatusDisplay(isRunning ? 'Running' : 'Stopped', isRunning);
+  updateStatusDisplay(isRunning ? tUI('statusRunning') : tUI('statusStopped'), isRunning);
 }
 
 // Load config on startup
 document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize i18n first
+  await initI18n();
+  setupLanguageSelector();
+
   await loadConfig();
   await updateStatus();
   await loadRunningState(); // Load current running state
@@ -19,6 +23,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupValidation(); // Setup field validation
   checkOnboarding(); // Check if first time user
 });
+
+// Setup language selector
+function setupLanguageSelector() {
+  const selector = document.getElementById('language-selector');
+  if (!selector) return;
+
+  // Set current language
+  selector.value = getCurrentLanguage();
+
+  // Listen for changes
+  selector.addEventListener('change', async (e) => {
+    const newLang = e.target.value;
+    await changeLanguage(newLang);
+
+    // Update dynamic content that isn't handled by data-i18n
+    updateStatusDisplay(isRunning ? tUI('statusRunning') : tUI('statusStopped'), isRunning);
+  });
+}
 
 // Setup tabs
 function setupTabs() {
@@ -45,9 +67,12 @@ function setupTabs() {
 // Load saved configuration
 async function loadConfig() {
   const config = await chrome.storage.sync.get([
-    'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode', 'city',
+    'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode', 'city', 'currentCompany',
+    'linkedinUrl', 'portfolioUrl',
     'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'autoNextPage', 'expectedSalary',
-    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
+    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense', 'disabilityStatus',
+    'ethnicity', 'englishLevel',
+    'groqApiKey', 'enableAI', 'professionalSummary', 'skills'
   ]);
 
   // Load from local storage for larger data (resume)
@@ -59,6 +84,9 @@ async function loadConfig() {
   document.getElementById('phoneCountryCode').value = config.phoneCountryCode || '+1';
   document.getElementById('phone').value = config.phone || '';
   document.getElementById('city').value = config.city || '';
+  document.getElementById('currentCompany').value = config.currentCompany || '';
+  document.getElementById('linkedinUrl').value = config.linkedinUrl || '';
+  document.getElementById('portfolioUrl').value = config.portfolioUrl || '';
   document.getElementById('yearsOfExperience').value = config.yearsOfExperience || '2';
   document.getElementById('maxYearsRequired').value = config.maxYearsRequired || '3';
   document.getElementById('expectedSalary').value = config.expectedSalary || '';
@@ -70,6 +98,18 @@ async function loadConfig() {
   document.getElementById('legallyAuthorized').value = config.legallyAuthorized || 'yes';
   document.getElementById('willingToRelocate').value = config.willingToRelocate || 'yes';
   document.getElementById('driversLicense').value = config.driversLicense || 'yes';
+  document.getElementById('disabilityStatus').value = config.disabilityStatus || 'no';
+  document.getElementById('ethnicity').value = config.ethnicity || 'prefer_not_to_say';
+  document.getElementById('englishLevel').value = config.englishLevel || 'advanced';
+
+  // Load AI settings
+  document.getElementById('groqApiKey').value = config.groqApiKey || '';
+  document.getElementById('enableAI').checked = config.enableAI !== false;
+  document.getElementById('professionalSummary').value = config.professionalSummary || '';
+  document.getElementById('skills').value = config.skills || '';
+
+  // Load cached answers count
+  loadCachedAnswersCount();
 
   // Load resume if exists
   if (local.resumeFileName) {
@@ -110,6 +150,9 @@ async function saveConfig() {
     phoneCountryCode: document.getElementById('phoneCountryCode').value,
     phone: document.getElementById('phone').value,
     city: document.getElementById('city').value,
+    currentCompany: document.getElementById('currentCompany').value,
+    linkedinUrl: document.getElementById('linkedinUrl').value,
+    portfolioUrl: document.getElementById('portfolioUrl').value,
     yearsOfExperience: document.getElementById('yearsOfExperience').value,
     maxYearsRequired: document.getElementById('maxYearsRequired').value,
     expectedSalary: document.getElementById('expectedSalary').value,
@@ -118,7 +161,14 @@ async function saveConfig() {
     visaSponsorship: document.getElementById('visaSponsorship').value,
     legallyAuthorized: document.getElementById('legallyAuthorized').value,
     willingToRelocate: document.getElementById('willingToRelocate').value,
-    driversLicense: document.getElementById('driversLicense').value
+    driversLicense: document.getElementById('driversLicense').value,
+    disabilityStatus: document.getElementById('disabilityStatus').value,
+    ethnicity: document.getElementById('ethnicity').value,
+    englishLevel: document.getElementById('englishLevel').value,
+    groqApiKey: document.getElementById('groqApiKey').value,
+    enableAI: document.getElementById('enableAI').checked,
+    professionalSummary: document.getElementById('professionalSummary').value,
+    skills: document.getElementById('skills').value
   };
 
   showAutoSaveIndicator(true);
@@ -130,8 +180,11 @@ async function saveConfig() {
 function setupAutoSave() {
   const inputFields = [
     'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
-    'city', 'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords',
-    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
+    'city', 'currentCompany', 'linkedinUrl', 'portfolioUrl',
+    'yearsOfExperience', 'maxYearsRequired', 'expectedSalary', 'blacklistKeywords',
+    'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense', 'disabilityStatus',
+    'ethnicity', 'englishLevel',
+    'groqApiKey', 'professionalSummary', 'skills'
   ];
 
   inputFields.forEach(fieldId => {
@@ -147,12 +200,60 @@ function setupAutoSave() {
     }
   });
 
-  // For checkbox, save immediately
-  const checkbox = document.getElementById('autoNextPage');
-  if (checkbox) {
-    checkbox.addEventListener('change', () => {
-      saveConfig();
+  // For checkboxes, save immediately
+  const checkboxes = ['autoNextPage', 'enableAI'];
+  checkboxes.forEach(id => {
+    const checkbox = document.getElementById(id);
+    if (checkbox) {
+      checkbox.addEventListener('change', () => {
+        saveConfig();
+      });
+    }
+  });
+
+  // Toggle API key visibility
+  const toggleBtn = document.getElementById('toggleApiKey');
+  const apiKeyInput = document.getElementById('groqApiKey');
+  if (toggleBtn && apiKeyInput) {
+    toggleBtn.addEventListener('click', () => {
+      if (apiKeyInput.type === 'password') {
+        apiKeyInput.type = 'text';
+        toggleBtn.textContent = '🙈';
+      } else {
+        apiKeyInput.type = 'password';
+        toggleBtn.textContent = '👁️';
+      }
     });
+  }
+
+  // Clear cached answers button
+  const clearCacheBtn = document.getElementById('clear-cached-answers');
+  if (clearCacheBtn) {
+    clearCacheBtn.addEventListener('click', async () => {
+      if (!confirm(tUI('confirmClearCache'))) return;
+      await chrome.storage.local.set({ aiAnswersCache: {} });
+      loadCachedAnswersCount();
+      showToast(tUI('aiCacheCleared'), 'info');
+    });
+  }
+}
+
+// Load and display cached answers count
+async function loadCachedAnswersCount() {
+  try {
+    const { aiAnswersCache = {} } = await chrome.storage.local.get(['aiAnswersCache']);
+    const count = Object.keys(aiAnswersCache).length;
+    const infoDiv = document.getElementById('cached-answers-info');
+    const countSpan = document.getElementById('cached-answers-count');
+
+    if (count > 0) {
+      infoDiv.style.display = 'block';
+      countSpan.textContent = count;
+    } else {
+      infoDiv.style.display = 'none';
+    }
+  } catch (e) {
+    console.error('Error loading cached answers count:', e);
   }
 }
 
@@ -163,19 +264,19 @@ document.getElementById('start-btn').addEventListener('click', async () => {
 
     // Check if we're on LinkedIn
     if (!tab.url || !tab.url.includes('linkedin.com')) {
-      showToast('Please open a LinkedIn jobs page first! (linkedin.com/jobs/...)', 'warning', 6000);
+      showToast(tUI('errorLinkedInPage'), 'warning', 6000);
       return;
     }
 
     // Check if on job search page
     if (!tab.url.includes('/jobs/')) {
-      showToast('Please navigate to LinkedIn Jobs page first! (linkedin.com/jobs/search/ or /jobs/collections/)', 'warning', 6000);
+      showToast(tUI('errorJobsPage'), 'warning', 6000);
       return;
     }
 
     // Validate fields before starting
     if (!validateAllFields()) {
-      showToast('Please fix the errors in your personal information before starting', 'error');
+      showToast(tUI('errorFixFields'), 'error');
       return;
     }
 
@@ -207,7 +308,7 @@ document.getElementById('start-btn').addEventListener('click', async () => {
     await new Promise(resolve => setTimeout(resolve, 300));
   } catch (error) {
     console.error('Start error:', error);
-    showToast('Error starting bot. Please reload the LinkedIn page (F5) and try again.', 'error');
+    showToast(tUI('errorStartBot'), 'error');
   }
 });
 
@@ -274,12 +375,12 @@ chrome.runtime.onMessage.addListener((request) => {
     // Bot has started in content script
     isRunning = true;
     updateButtons();
-    updateStatusDisplay('Running', true);
+    updateStatusDisplay(tUI('statusRunning'), true);
   } else if (request.type === 'botStopped') {
     // Bot has stopped in content script
     isRunning = false;
     updateButtons();
-    updateStatusDisplay('Stopped', false);
+    updateStatusDisplay(tUI('statusStopped'), false);
   }
 });
 
@@ -297,7 +398,7 @@ document.getElementById('export-csv-btn').addEventListener('click', async () => 
     const jobs = local.appliedJobs || [];
 
     if (jobs.length === 0) {
-      showToast('No jobs applied yet. Start the bot first!', 'info');
+      showToast(tUI('noJobsApplied'), 'info');
       return;
     }
 
@@ -316,7 +417,7 @@ document.getElementById('export-csv-btn').addEventListener('click', async () => 
     // Visual feedback
     const btn = document.getElementById('export-csv-btn');
     const originalHTML = btn.innerHTML;
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Exported ${jobs.length} jobs!`;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> ${tUI('exported')} ${jobs.length}!`;
     btn.style.background = '#059669';
 
     setTimeout(() => {
@@ -331,7 +432,7 @@ document.getElementById('export-csv-btn').addEventListener('click', async () => 
 
 // Reset counters
 document.getElementById('reset-counters-btn').addEventListener('click', async () => {
-  if (!confirm('Reset all counters and clear applied jobs list?')) return;
+  if (!confirm(tUI('confirmReset'))) return;
 
   try {
     // Update storage directly - more reliable than messaging content script
@@ -359,7 +460,7 @@ document.getElementById('reset-counters-btn').addEventListener('click', async ()
     // Visual feedback
     const btn = document.getElementById('reset-counters-btn');
     const originalHTML = btn.innerHTML;
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Reset!`;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> ${tUI('reset')}`;
     btn.style.background = '#059669';
 
     setTimeout(() => {
@@ -405,8 +506,8 @@ async function loadAppliedJobs() {
             <path d="M8 6V4H16V6" stroke="currentColor" stroke-width="2"/>
             <path d="M12 11V17M9 14H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          <p>No applications yet</p>
-          <small>Start applying to see your job applications here</small>
+          <p>${tUI('noApplicationsYet')}</p>
+          <small>${tUI('noApplicationsHint')}</small>
         </div>
       `;
       return;
@@ -426,7 +527,7 @@ async function loadAppliedJobs() {
           <span class="job-time">${formatTimeAgo(job.date)}</span>
         </div>
         <a href="${job.link}" target="_blank" class="job-link">
-          View on LinkedIn
+          ${tUI('viewOnLinkedIn')}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -462,7 +563,7 @@ function formatTimeAgo(dateString) {
 
 // Clear all applied jobs
 document.getElementById('clear-applied-jobs')?.addEventListener('click', async () => {
-  if (!confirm('Clear all applied jobs from the list? This cannot be undone.')) return;
+  if (!confirm(tUI('confirmClearJobs'))) return;
 
   try {
     await chrome.storage.local.set({ appliedJobs: [] });
@@ -501,14 +602,14 @@ function setupResumeUpload() {
 
     // Check file size (max 5MB for Chrome Storage local)
     if (file.size > 5 * 1024 * 1024) {
-      showToast('File too large! Please upload a file smaller than 5MB.');
+      showToast(tUI('errorFileTooLarge'));
       return;
     }
 
     // Check file type
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
-      showToast('Invalid file type! Please upload PDF, DOC, or DOCX files only.');
+      showToast(tUI('errorInvalidFileType'));
       return;
     }
 
@@ -545,7 +646,7 @@ function setupResumeUpload() {
 
   // Handle remove button
   removeBtn.addEventListener('click', async () => {
-    if (!confirm('Remove uploaded resume?')) return;
+    if (!confirm(tUI('confirmRemoveResume'))) return;
 
     try {
       // Remove from storage

@@ -2,18 +2,47 @@
 
 All notable changes to EasyApplyMax will be documented in this file.
 
+## [v1.6.0] - 2026-01-26
+
+### ✨ New Features
+
+- **AI-Powered Answers (Groq Integration)** - Uses Groq AI to intelligently answer unknown/custom application questions
+- **Smart Answer Caching** - All answers are saved to storage and reused for similar questions (no repeated API calls)
+- **Similarity Matching** - Finds cached answers for similar questions using Jaccard similarity algorithm
+- **Professional Profile** - Configure your professional summary and skills for better AI responses
+- **Textarea Support** - Now handles long-form text fields like cover letter snippets
+- **Learning System** - Saves all submitted answers to improve future applications
+
+### 🔧 Settings Additions
+
+- Groq API Key field (free at console.groq.com)
+- Enable/Disable AI toggle
+- Professional Summary textarea
+- Skills input field
+- Cached answers counter with clear button
+
+### 📝 How AI Works
+
+1. When a question is detected, first checks the cache for exact or similar matches
+2. If no cache hit (>70% similarity), calls Groq API with your profile context
+3. Answer is saved to cache for future use
+4. All answers from successful applications are automatically cached
+
 ## [v1.5.0] - 2026-01-15
 
 ### ✨ New Features
+
 - **LinkedIn Collections Support** - Now works on `/jobs/collections/` pages (saved jobs, recommended jobs, etc.) with infinite scroll
 - **Smart Resume Selection** - Now selects existing/previously uploaded CV instead of re-uploading for each application. Only uploads once (first application), then reuses the CV.
 
 ### 🐛 Bug Fixes
+
 - Removed redundant "Welcome aboard!" toast message after onboarding
 - Fixed fadeOut animation for onboarding overlay closure
 - Fixed resume being uploaded for every single application (now uploads once, then selects existing)
 
 ### 🔧 Technical Improvements
+
 - Collections support uses conditional selectors (only on collections pages, doesn't affect search pages)
 - Infinite scroll pagination for collections pages
 - Standard pagination preserved for search pages
@@ -23,6 +52,7 @@ All notable changes to EasyApplyMax will be documented in this file.
 ### 🎉 Initial Release
 
 #### ✨ Features
+
 - **Automated LinkedIn Easy Apply** - One-click job applications
 - **Smart Form Filling** - Automatically fills application forms
 - **Human-like Behavior** - Random delays and natural interactions
@@ -34,6 +64,7 @@ All notable changes to EasyApplyMax will be documented in this file.
 - **Applied Jobs Tab** - View application history in extension popup
 
 #### 🎨 UI/UX
+
 - Clean, modern interface with LinkedIn color scheme
 - Discord community card with direct link
 - Three tabs: Personal Info, Settings, Applied Jobs
@@ -46,6 +77,7 @@ All notable changes to EasyApplyMax will be documented in this file.
 - Empty state for no applications
 
 #### 🤖 Automation
+
 - Multi-selector element detection (XPath + CSS)
 - Retry mechanism (up to 3 attempts)
 - Automatic stuck detection (2-minute timeout)
@@ -53,18 +85,21 @@ All notable changes to EasyApplyMax will be documented in this file.
 - Error recovery and continuation
 
 #### 🔒 Security & Privacy
+
 - 100% local data storage
 - No external servers
 - LinkedIn-only permissions
 - Open source and transparent
 
 #### 💬 Community
-- Discord integration (https://discord.gg/xWaCXBZbws)
+
+- Discord integration (<https://discord.gg/xWaCXBZbws>)
 - Twitter presence (@Azo92i)
 - Community-driven development
 - Feature voting and feedback
 
 #### 📚 Documentation
+
 - Professional README with roadmap
 - Installation guide
 - Usage guide
@@ -75,6 +110,7 @@ All notable changes to EasyApplyMax will be documented in this file.
 - Google Sheets integration guide (future)
 
 ### 🐛 Bug Fixes
+
 - Fixed daily limit detection with multiple message patterns
 - Improved button state synchronization
 - Better error handling for failed applications
@@ -82,21 +118,25 @@ All notable changes to EasyApplyMax will be documented in this file.
 ### 🚀 Coming Soon (Roadmap)
 
 #### v1.1.0 - AI Integration
+
 - AI-powered job matching
 - Google Sheets auto-export
 - Success rate tracking
 
 #### v1.2.0 - CV & Cover Letters
+
 - Dynamic CV adaptation for each job
 - AI-generated cover letters
 - Multi-format resume support
 
 #### v1.3.0 - Multi-Platform
+
 - Indeed support
 - Glassdoor support
 - Company career page auto-apply
 
 #### v1.4.0 - Advanced Analytics
+
 - Application success rates
 - Response time tracking
 - Industry insights
@@ -113,6 +153,7 @@ All notable changes to EasyApplyMax will be documented in this file.
 ## Upgrade Guide
 
 ### From Nothing to v1.0.0
+
 Fresh install - follow [Installation Guide](README.md#installation)
 
 ---
