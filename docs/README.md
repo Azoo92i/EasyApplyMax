@@ -6,7 +6,7 @@ Ce dossier contient la Privacy Policy hébergée sur **GitHub Pages**.
 
 Une fois GitHub Pages activé, votre Privacy Policy sera accessible à :
 ```
-https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
+https://YOUR-USERNAME.github.io/AutoApplyMax/privacy-policy.html
 ```
 
 Cette URL sera utilisée dans votre soumission Chrome Web Store.
@@ -26,7 +26,7 @@ git push origin main
 
 ### Étape 2 : Activer GitHub Pages
 
-1. Allez sur votre repository GitHub : `https://github.com/YOUR-USERNAME/EasyApplyMax`
+1. Allez sur votre repository GitHub : `https://github.com/YOUR-USERNAME/AutoApplyMax`
 2. Cliquez sur **Settings** (⚙️)
 3. Dans le menu de gauche, cliquez sur **Pages**
 4. Dans **Source**, sélectionnez :
@@ -42,7 +42,7 @@ git push origin main
 
 ### Étape 4 : Testez l'URL
 
-Visitez : `https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html`
+Visitez : `https://YOUR-USERNAME.github.io/AutoApplyMax/privacy-policy.html`
 
 ✅ Si la page s'affiche correctement, c'est prêt !
 
@@ -65,7 +65,7 @@ Lorsque vous soumettez l'extension sur le Chrome Web Store, utilisez cette URL :
 
 **Privacy Policy URL :**
 ```
-https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html
+https://YOUR-USERNAME.github.io/AutoApplyMax/privacy-policy.html
 ```
 
 Remplacez `YOUR-USERNAME` par votre nom d'utilisateur GitHub réel.
@@ -80,10 +80,10 @@ Dans `privacy-policy.html`, remplacez :
 
 ```html
 <!-- Ligne ~569 -->
-<a href="https://github.com/YOUR-USERNAME/EasyApplyMax/issues" target="_blank">GitHub Issues</a>
+<a href="https://github.com/YOUR-USERNAME/AutoApplyMax/issues" target="_blank">GitHub Issues</a>
 
 <!-- Ligne ~594 -->
-<a href="https://github.com/YOUR-USERNAME/EasyApplyMax" target="_blank">GitHub</a>
+<a href="https://github.com/YOUR-USERNAME/AutoApplyMax" target="_blank">GitHub</a>
 ```
 
 Par votre vrai repository URL.
@@ -146,6 +146,6 @@ Si GitHub Pages ne fonctionne pas :
 
 Votre Privacy Policy est maintenant hébergée professionnellement sur GitHub Pages, gratuitement ! 🚀
 
-**URL finale :** `https://YOUR-USERNAME.github.io/EasyApplyMax/privacy-policy.html`
+**URL finale :** `https://YOUR-USERNAME.github.io/AutoApplyMax/privacy-policy.html`
 
 Utilisez cette URL dans votre soumission Chrome Web Store.

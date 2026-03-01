@@ -1,6 +1,6 @@
 // Service worker de l'extension
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('EasyApplyMax v1.3.1 - Extension installée');
+  console.log('AutoApplyMax v1.3.1 - Extension installée');
 
   // Initialiser le storage
   chrome.storage.local.set({

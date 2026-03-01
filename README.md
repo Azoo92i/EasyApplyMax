@@ -1,4 +1,4 @@
-# EasyApplyMax
+# AutoApplyMax
 
 > **🚀 Currently in active development** - Join our community to stay updated on new features!
 
@@ -14,7 +14,7 @@ A powerful Chrome extension that automates LinkedIn Easy Apply job applications 
 
 [![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Download-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/easyapplymax/oeaobljpdipleeanlfjppmlokkajodbk)
 
-**[🔗 Click here to install EasyApplyMax](https://chromewebstore.google.com/detail/easyapplymax/oeaobljpdipleeanlfjppmlokkajodbk)**
+**[🔗 Click here to install AutoApplyMax](https://chromewebstore.google.com/detail/easyapplymax/oeaobljpdipleeanlfjppmlokkajodbk)**
 
 ✅ One-click installation
 ✅ Automatic updates
@@ -65,7 +65,7 @@ A powerful Chrome extension that automates LinkedIn Easy Apply job applications 
 
 **Click the video below to watch:**
 
-[![EasyApplyMax - Complete Tutorial](https://img.youtube.com/vi/e7mUETgoZrI/maxresdefault.jpg)](https://www.youtube.com/watch?v=e7mUETgoZrI)
+[![AutoApplyMax - Complete Tutorial](https://img.youtube.com/vi/e7mUETgoZrI/maxresdefault.jpg)](https://www.youtube.com/watch?v=e7mUETgoZrI)
 
 **[▶️ Watch on YouTube: https://www.youtube.com/watch?v=e7mUETgoZrI](https://www.youtube.com/watch?v=e7mUETgoZrI)**
 
@@ -87,7 +87,7 @@ A powerful Chrome extension that automates LinkedIn Easy Apply job applications 
 
 ### 🌟 This is a Community-Driven Project!
 
-We're building EasyApplyMax together with job seekers worldwide. Join us to:
+We're building AutoApplyMax together with job seekers worldwide. Join us to:
 - 💡 **Suggest features** you want to see
 - 🐛 **Report bugs** and help improve stability
 - 🤝 **Get support** from the community
@@ -101,7 +101,7 @@ We're building EasyApplyMax together with job seekers worldwide. Join us to:
 <td align="center" width="50%">
 
 ### 💬 Discord Community
-**Your main hub for everything EasyApplyMax**
+**Your main hub for everything AutoApplyMax**
 
 Get instant help, discuss features, and connect with other users actively using the tool.
 
@@ -137,15 +137,15 @@ Stay in the loop with new releases, feature updates, and job search automation t
 
 1. **Download the extension**
    ```bash
-   git clone https://github.com/yourusername/EasyApplyMax.git
-   cd EasyApplyMax
+   git clone https://github.com/yourusername/AutoApplyMax.git
+   cd AutoApplyMax
    ```
 
 2. **Load in Chrome**
    - Open Chrome and go to `chrome://extensions/`
    - Enable **Developer mode** (toggle in top-right)
    - Click **Load unpacked**
-   - Select the `EasyApplyMax` folder
+   - Select the `AutoApplyMax` folder
    - The extension icon should appear in your toolbar ✅
 
 ---
@@ -176,7 +176,7 @@ Stay in the loop with new releases, feature updates, and job search automation t
 
 ### Step 2: Launch the Bot
 
-1. Click the EasyApplyMax icon
+1. Click the AutoApplyMax icon
 2. Verify your configuration
 3. Click **"Start"** ▶️
 4. The bot will:
@@ -213,7 +213,7 @@ The extension uses advanced techniques for reliability:
 ## 📁 Project Structure
 
 ```
-EasyApplyMax/
+AutoApplyMax/
 ├── manifest.json          # Extension configuration
 ├── popup.html             # User interface
 ├── popup.css              # UI styling
@@ -337,7 +337,7 @@ This tool is provided for **educational purposes** and to assist with job search
 
 ## 💎 Support the Project
 
-Love EasyApplyMax? Here's how you can help:
+Love AutoApplyMax? Here's how you can help:
 
 - ⭐ **Star this repo** on GitHub
 - 💬 **Join our [Discord](https://discord.gg/xWaCXBZbws)** community
@@ -351,7 +351,7 @@ Love EasyApplyMax? Here's how you can help:
 
 ### 🚀 Ready to maximize your job applications?
 
-**[Join Discord](https://discord.gg/xWaCXBZbws)** • **[Follow @Azo92i](https://twitter.com/Azo92i)** • **[Report Issues](https://github.com/yourusername/EasyApplyMax/issues)**
+**[Join Discord](https://discord.gg/xWaCXBZbws)** • **[Follow @Azo92i](https://twitter.com/Azo92i)** • **[Report Issues](https://github.com/yourusername/AutoApplyMax/issues)**
 
 ---
 
