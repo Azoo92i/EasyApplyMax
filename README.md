@@ -156,29 +156,6 @@ Based on data from thousands of automated applications:
 
 ---
 
-## Pricing
-
-| Plan | What You Get |
-|------|-------------|
-| **Free** | 10 auto-applies/day, basic dashboard, universal autofill |
-| **Premium** | Unlimited auto-applies, AI resume optimizer, AI cover letters |
-| **Unlimited** | Everything + priority support + early access |
-
----
-
-## Platform Comparison
-
-| Platform | Auto-Apply | AI Resume | Cover Letters | Tracking | Free |
-|----------|-----------|-----------|---------------|----------|------|
-| **AutoApplyMax** | All platforms | AI-powered | AI-generated | Real-time | 10/day |
-| LinkedIn Easy Apply | Manual | No | No | Basic | Limited |
-| Indeed SmartApply | Semi-auto | No | No | Basic | Yes |
-| LazyApply | LinkedIn only | No | No | Basic | $29/mo |
-| Simplify | Some sites | No | No | Yes | Limited |
-| LoopCV | Email-based | No | Basic | Yes | $19/mo |
-
----
-
 ## Links
 
 | | |
