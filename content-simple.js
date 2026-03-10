@@ -665,6 +665,27 @@ async function mainLoop() {
         await click(easyApplyBtn);
         await wait(800); // Ultra optimized Easy Apply wait
 
+        // Safety reminder modal ("Continue applying")
+        // LinkedIn sometimes shows a "Job search safety reminder" dialog
+        const safetyModal = document.querySelector('[role="dialog"], .artdeco-modal');
+        if (safetyModal && safetyModal.offsetParent !== null) {
+          const safetyText = safetyModal.textContent.toLowerCase();
+          if (safetyText.includes('safety reminder') || safetyText.includes('rappel de sécurité') ||
+              safetyText.includes('continue applying') || safetyText.includes('continuer à postuler')) {
+            log('Safety reminder detected — clicking Continue applying...');
+            const continueBtn = Array.from(safetyModal.querySelectorAll('button')).find(btn => {
+              const t = btn.textContent.trim().toLowerCase();
+              return t.includes('continue applying') || t.includes('continuer à postuler') ||
+                     t.includes('continue') || t.includes('continuer');
+            });
+            if (continueBtn) {
+              await click(continueBtn);
+              log('Safety reminder dismissed');
+              await wait(1000);
+            }
+          }
+        }
+
         // CRITICAL: Check for daily limit immediately after clicking Easy Apply
         // This catches the network error case where modal doesn't appear
         if (checkDailyLimit()) {
