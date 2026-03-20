@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to EasyApplyMax will be documented in this file.
+All notable changes to AutoApplyMax will be documented in this file.
 
 ## [v1.6.0] - 2026-01-26
 
@@ -177,5 +177,5 @@ None yet - this is the first release!
 
 - 💬 [Discord Community](https://discord.gg/xWaCXBZbws)
 - 🐦 [Twitter @Azo92i](https://twitter.com/Azo92i)
-- 🐛 [Report Issues](https://github.com/yourusername/EasyApplyMax/issues)
-- ⭐ [GitHub Repo](https://github.com/yourusername/EasyApplyMax)
+- 🐛 [Report Issues](https://github.com/yourusername/AutoApplyMax/issues)
+- ⭐ [GitHub Repo](https://github.com/yourusername/AutoApplyMax)

@@ -316,7 +316,7 @@ function showOnboarding() {
     ">
       <div style="text-align: center; margin-bottom: 24px;">
         <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
-        <h2 style="margin: 0 0 8px 0; color: #0a66c2; font-size: 24px;">Welcome to EasyApplyMax!</h2>
+        <h2 style="margin: 0 0 8px 0; color: #0a66c2; font-size: 24px;">Welcome to AutoApplyMax!</h2>
         <p style="margin: 0; color: #64748b; font-size: 14px;">Let's get you started in 3 easy steps</p>
       </div>
 

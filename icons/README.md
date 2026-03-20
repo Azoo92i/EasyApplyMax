@@ -1,4 +1,4 @@
-# EasyApplyMax Icons
+# AutoApplyMax Icons
 
 ## Design Concept
 
@@ -42,7 +42,7 @@ magick icon.svg -resize 128x128 icon128.png
 
 ## Current Icons
 
-The existing icons are placeholder LinkedIn-style icons. The new design better represents the automation aspect of EasyApplyMax.
+The existing icons are placeholder LinkedIn-style icons. The new design better represents the automation aspect of AutoApplyMax.
 
 ## Icon Checklist
 

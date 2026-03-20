@@ -16,133 +16,6 @@ let resumeFile = null; // Base64 data
 let resumeFileName = null;
 let resumeFileType = null;
 
-// AI Integration variables
-let groqApiKey = null;
-let enableAI = false;
-let professionalSummary = '';
-let skills = '';
-let aiAnswersCache = {}; // Cache for AI-generated answers
-
-// Current language for AI responses
-let currentLanguage = 'en';
-
-// ============================================
-// MULTILINGUAL PATTERNS - Button/Field Detection
-// Supports: EN, PT-BR, ES, FR, DE, IT
-// ============================================
-const PATTERNS = {
-  // Easy Apply button patterns (for aria-label detection)
-  easyApply: [
-    'Easy Apply', 'Candidatura simplificada', 'Candidatura Simplificada',
-    'Solicitud sencilla', 'Solicitud Sencilla', 'Candidature simplifiée',
-    'Candidature Simplifiée', 'Einfach bewerben', 'Candidatura semplice'
-  ],
-
-  // Done/Submit application button text
-  doneButtons: [
-    'Done', 'Submit application', 'Submit', 'Dismiss', 'Close', 'Continue',
-    'Concluído', 'Enviar candidatura', 'Enviar', 'Fechar', 'Dispensar', 'Continuar',
-    'Listo', 'Enviar solicitud', 'Cerrar', 'Descartar',
-    'Terminé', 'Soumettre la candidature', 'Soumettre', 'Fermer',
-    'Fertig', 'Bewerbung absenden', 'Absenden', 'Schließen',
-    'Fatto', 'Invia candidatura', 'Invia', 'Chiudi'
-  ],
-
-  // Discard/Cancel button text
-  discardButtons: [
-    'discard', 'cancel', 'close', 'dismiss',
-    'descartar', 'cancelar', 'fechar', 'dispensar',
-    'cerrar', 'anular', 'annuler', 'abandonner', 'fermer',
-    'verwerfen', 'abbrechen', 'schließen', 'scartare', 'annullare', 'chiudere'
-  ],
-
-  // Close/Dismiss button aria-labels (for modal close buttons)
-  closeButtonLabels: [
-    'Dismiss', 'Close', 'Fechar', 'Dispensar', 'Cerrar', 'Descartar',
-    'Fermer', 'Ignorer', 'Schließen', 'Chiudi', 'Annulla'
-  ],
-
-  // Pagination next button aria-labels
-  paginationNext: [
-    'Next', 'Próximo', 'Próxima', 'Siguiente', 'Suivant', 'Weiter', 'Avanti',
-    'View next page', 'Ver próxima página', 'Ver siguiente página',
-    'Page suivante', 'Nächste Seite', 'Pagina successiva'
-  ],
-
-  // Next/Review/Continue button text
-  nextButtons: [
-    'next', 'review', 'continue',
-    'próximo', 'avançar', 'continuar', 'revisar',
-    'siguiente', 'suivant', 'réviser', 'continuer',
-    'weiter', 'überprüfen', 'fortsetzen', 'avanti', 'rivedi', 'continua'
-  ],
-
-  // Submit button text
-  submitButtons: [
-    'submit', 'send', 'apply',
-    'enviar', 'candidatar', 'aplicar', 'postular',
-    'soumettre', 'envoyer', 'postuler', 'absenden', 'bewerben', 'invia', 'candidati'
-  ],
-
-  // Daily limit messages
-  dailyLimit: [
-    "You've reached today's Easy Apply limit", "reached today's Easy Apply limit",
-    "Great effort applying today", "we limit daily submissions", "continue applying tomorrow",
-    "Save this job and continue applying tomorrow", "exceeded the daily application limit",
-    "daily Easy Apply limit", "limit daily submissions",
-    "Você atingiu o limite de Candidatura Simplificada de hoje", "limite diário de candidaturas",
-    "continue se candidatando amanhã", "Bom trabalho se candidatando hoje",
-    "Has alcanzado el límite de Solicitud Sencilla de hoy", "límite diario de solicitudes",
-    "continúa aplicando mañana", "Gran esfuerzo aplicando hoy",
-    "Vous avez atteint la limite de Candidature Simplifiée", "limite quotidienne de candidatures",
-    "Tägliches Bewerbungslimit erreicht"
-  ],
-
-  // Field detection patterns (regex)
-  fields: {
-    yearsExperience: /experience|years|expérience|années|experiência|anos|años|jahre|anni|esperienza/i,
-    salary: /salary|compensation|remuneration|salaire|rémunération|salário|sueldo|salario|gehalt|stipendio/i,
-    email: /email|e-mail|courriel|correo/i,
-    firstName: /first|prénom|prenom|nombre|vorname|nome/i,
-    lastName: /last|nom|apellido|nachname|cognome/i,
-    phone: /phone|téléphone|telefono|telefon|mobile|portable|cell|móvil|cellulare|celular/i,
-    city: /city|ville|ciudad|stadt|città|location|localisation|ubicación|standort/i,
-    currentCompany: /current.*company|current.*employer|empresa.*atual|employeur.*actuel|empleador.*actual|most recent.*company|última.*empresa|recent.*employer/i,
-    linkedinUrl: /linkedin.*url|linkedin.*profile|perfil.*linkedin|profil.*linkedin|url.*linkedin/i,
-    portfolioUrl: /portfolio.*url|portfolio|website|personal.*site|site.*personnel|sitio.*personal|site.*pessoal|github|behance/i
-  },
-
-  // Yes/No patterns for radio buttons
-  yesPatterns: /^(yes|oui|sí|si|ja|y|sim)$/i,
-  noPatterns: /^(no|non|nein|n|não)$/i,
-
-  // Language proficiency patterns
-  proficiency: {
-    native: /native|bilingual|bilingue|bilíngue|langue maternelle|lengua materna/i,
-    fluent: /fluent|courant|fluide|fluente|fluido/i,
-    professional: /professional|professionnel|profissional|profesional|advanced|avançado/i,
-    intermediate: /intermediate|intermediário|intermedio|moyen/i,
-    basic: /basic|básico|basique|elementary|elementar/i
-  },
-
-  // English level detection pattern
-  englishLevelQuestion: /english.*level|level.*english|english.*proficiency|proficiency.*english|inglês|inglés|anglais/i,
-
-  // Ethnicity/Race detection pattern
-  ethnicityQuestion: /race|ethnicity|ethnic|racial|cor|raça|raza|etnia|origem étnica/i,
-
-  // Ethnicity option patterns (to match dropdown options)
-  ethnicityOptions: {
-    white: /white|branco|blanco|caucasian|caucasiano/i,
-    black: /black|negro|preto|african|africano/i,
-    hispanic: /hispanic|latino|latina|hispânico|hispano/i,
-    asian: /asian|asiático|asiatic|amarelo/i,
-    indigenous: /indigenous|indígena|native american|índio|aboriginal/i,
-    mixed: /mixed|multiracial|pardo|mestizo|two or more|duas ou mais/i,
-    preferNotToSay: /prefer not|prefiro não|prefiero no|decline|não informar|no responder/i
-  }
-};
-
 // Logs simples
 function log(msg) {
   console.log('[LinkedIn Bot]', msg);
@@ -186,8 +59,20 @@ function isStuck() {
 // Check for LinkedIn's daily Easy Apply limit
 function checkDailyLimit() {
   try {
-    // Use multilingual patterns from PATTERNS constant
-    const limitPatterns = PATTERNS.dailyLimit;
+    // List of limit message patterns (case-insensitive)
+    const limitPatterns = [
+      "You've reached today's Easy Apply limit",
+      "You've reached today's easy apply limit",
+      "reached today's Easy Apply limit",
+      "Great effort applying today",
+      "we limit daily submissions",
+      "continue applying tomorrow",
+      "Save this job and continue applying tomorrow",
+      "exceeded the daily application limit",
+      "reached today\\'s easy apply limit",
+      "daily Easy Apply limit",
+      "limit daily submissions"
+    ];
 
     // Search in entire page text
     const bodyText = document.body.innerText || '';
@@ -241,8 +126,7 @@ function checkDailyLimit() {
 async function findAndClickDoneButton(contextElement = document, contextName = 'page', maxAttempts = 15) {
   log(`🔍 [${contextName}] Starting exhaustive search for Done button...`);
 
-  // Use multilingual patterns
-  const doneTexts = PATTERNS.doneButtons;
+  const doneTexts = ['Done', 'Terminé', 'Submit application', 'Soumettre la candidature', 'Dismiss', 'Close', 'Fermer'];
   let doneBtn = null;
 
   for (let attempt = 0; attempt < maxAttempts && !doneBtn; attempt++) {
@@ -414,8 +298,7 @@ async function refreshAndReturnToSearch() {
 async function discardApplication() {
   log('🚀 DISCARD: Starting SAFE discard sequence...');
 
-  // Use multilingual patterns
-  const discardTexts = PATTERNS.discardButtons;
+  const discardTexts = ['discard', 'annuler', 'cancel', 'abandonner', 'descarter'];
 
   try {
     // 🆕 DETECTION CRITIQUE: Vérifier si popup de chargement est bloqué (Python ligne 1547-1558)
@@ -434,9 +317,7 @@ async function discardApplication() {
 
     // STEP 1: Force close with X button (MOST RELIABLE METHOD - moved to first)
     log('🔍 STEP 1: Looking for X/Close button...');
-    // Build multilingual selector for close buttons
-    const closeSelectors = PATTERNS.closeButtonLabels.map(label => `button[aria-label*="${label}"]`).join(', ');
-    const closeButtons = document.querySelectorAll(`${closeSelectors}, button.artdeco-modal__dismiss`);
+    const closeButtons = document.querySelectorAll('button[aria-label*="Dismiss"], button[aria-label*="Close"], button.artdeco-modal__dismiss');
 
     for (let btn of closeButtons) {
       if (btn.offsetParent) {
@@ -545,392 +426,6 @@ function fill(input, value) {
   input.value = value;
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.dispatchEvent(new Event('change', { bubbles: true }));
-}
-
-// ============================================
-// AI INTEGRATION - Groq API + Answer Caching
-// ============================================
-
-// Normalize question text for comparison (remove extra spaces, lowercase, etc.)
-function normalizeQuestion(question) {
-  return question
-    .toLowerCase()
-    .replace(/[^\w\s]/g, '') // Remove punctuation
-    .replace(/\s+/g, ' ')    // Normalize spaces
-    .trim();
-}
-
-// Calculate similarity between two strings (Jaccard similarity on words)
-function calculateSimilarity(str1, str2) {
-  const words1 = new Set(normalizeQuestion(str1).split(' ').filter(w => w.length > 2));
-  const words2 = new Set(normalizeQuestion(str2).split(' ').filter(w => w.length > 2));
-
-  if (words1.size === 0 || words2.size === 0) return 0;
-
-  const intersection = new Set([...words1].filter(x => words2.has(x)));
-  const union = new Set([...words1, ...words2]);
-
-  return intersection.size / union.size;
-}
-
-// Find cached answer with similarity threshold
-function findCachedAnswer(question, threshold = 0.7) {
-  const normalizedQuestion = normalizeQuestion(question);
-
-  // First, try exact match
-  if (aiAnswersCache[normalizedQuestion]) {
-    log(`🎯 AI Cache HIT (exact): "${question.substring(0, 40)}..."`);
-    return aiAnswersCache[normalizedQuestion];
-  }
-
-  // Then, try similarity matching
-  let bestMatch = null;
-  let bestScore = 0;
-
-  for (const [cachedQuestion, answer] of Object.entries(aiAnswersCache)) {
-    const similarity = calculateSimilarity(question, cachedQuestion);
-    if (similarity > bestScore && similarity >= threshold) {
-      bestScore = similarity;
-      bestMatch = { question: cachedQuestion, answer, score: similarity };
-    }
-  }
-
-  if (bestMatch) {
-    log(`🎯 AI Cache HIT (${Math.round(bestMatch.score * 100)}% similar): "${question.substring(0, 40)}..."`);
-    return bestMatch.answer;
-  }
-
-  return null;
-}
-
-// Save answer to cache
-async function saveAnswerToCache(question, answer) {
-  const normalizedQuestion = normalizeQuestion(question);
-  aiAnswersCache[normalizedQuestion] = answer;
-
-  // Also save to Chrome storage for persistence
-  try {
-    await chrome.storage.local.set({ aiAnswersCache });
-    log(`💾 Cached answer for: "${question.substring(0, 40)}..."`);
-  } catch (e) {
-    log(`⚠️ Failed to save answer to cache: ${e.message}`);
-  }
-}
-
-// Get language name for AI prompts
-function getLanguageName(langCode) {
-  const languages = {
-    'en': 'English',
-    'pt-br': 'Portuguese (Brazilian)',
-    'es': 'Spanish',
-    'fr': 'French'
-  };
-  return languages[langCode] || 'English';
-}
-
-// Call Groq API to generate answer
-async function callGroqAPI(question, context = {}) {
-  if (!groqApiKey) {
-    log('⚠️ Groq API key not configured');
-    return null;
-  }
-
-  const responseLanguage = getLanguageName(currentLanguage);
-
-  const systemPrompt = `You are an AI assistant helping to fill out job application forms.
-You must provide SHORT, CONCISE answers suitable for form fields (usually 1-3 sentences max).
-Do NOT use markdown formatting. Just plain text.
-
-CANDIDATE PROFILE:
-- Name: ${config.firstName || ''} ${config.lastName || ''}
-- Email: ${config.email || ''}
-- Location: ${config.city || ''}
-- Years of Experience: ${config.yearsOfExperience || ''}
-- Skills: ${skills || 'Not specified'}
-- Professional Summary: ${professionalSummary || 'Not provided'}
-
-PREVIOUS ANSWERS (use for consistency):
-${Object.entries(aiAnswersCache).slice(-10).map(([q, a]) => `Q: ${q}\nA: ${a}`).join('\n\n')}
-
-RULES:
-1. Be concise - form fields have character limits
-2. Be professional and confident
-3. Match the tone of the question
-4. If asking about years of experience with specific tech, give a realistic number based on total experience
-5. If you don't have enough info, make reasonable assumptions based on the profile
-6. NEVER say "I don't know" - always provide a helpful answer
-7. Always reply in ${responseLanguage}
-8. IMPORTANT: For salary, compensation, or any monetary value questions, respond with ONLY numbers (e.g., "50000" not "R$ 50.000" or "$50,000"). No currency symbols, no dots, no commas, no spaces - just the raw number.
-9. For numeric fields (years, quantity, percentage), respond with ONLY the number without any text or symbols`;
-
-  const userPrompt = `Application Question: "${question}"
-${context.fieldType ? `Field Type: ${context.fieldType}` : ''}
-${context.maxLength ? `Max Length: ${context.maxLength} characters` : ''}
-
-Provide a direct answer suitable for this form field:`;
-
-  try {
-    log(`🤖 Calling Groq API for: "${question.substring(0, 50)}..."`);
-
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.3,
-        max_tokens: 200
-      })
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      log(`❌ Groq API error: ${response.status} - ${error}`);
-      return null;
-    }
-
-    const data = await response.json();
-    let answer = data.choices?.[0]?.message?.content?.trim();
-
-    if (answer) {
-      // Clean numeric answers (salary, years, etc.) - remove currency symbols, dots, commas, spaces
-      const isNumericQuestion = context.fieldType === 'number' ||
-        /salary|salário|sueldo|compensation|remuneration|rémunération|years|anos|años|quantity|quantidade|percentage|porcentagem/i.test(question);
-
-      if (isNumericQuestion) {
-        // Extract only digits from the answer
-        const numericValue = answer.replace(/[^\d]/g, '');
-        if (numericValue) {
-          answer = numericValue;
-          log(`🔢 Cleaned numeric answer: "${answer}"`);
-        }
-      }
-
-      log(`✅ Groq response: "${answer.substring(0, 50)}..."`);
-      // Save to cache for future use
-      await saveAnswerToCache(question, answer);
-      return answer;
-    }
-
-    return null;
-  } catch (error) {
-    log(`❌ Groq API call failed: ${error.message}`);
-    return null;
-  }
-}
-
-// Main function to get AI answer (cache first, then API)
-async function getAIAnswer(question, context = {}) {
-  if (!enableAI) {
-    return null;
-  }
-
-  // Try cache first
-  const cachedAnswer = findCachedAnswer(question);
-  if (cachedAnswer) {
-    return cachedAnswer;
-  }
-
-  // If not in cache, call API
-  return await callGroqAPI(question, context);
-}
-
-// AI function to select the best option from a dropdown
-async function getAIDropdownSelection(question, options) {
-  if (!enableAI || !groqApiKey) {
-    return null;
-  }
-
-  // Build options list for AI
-  const optionsList = options.map((opt, i) => `${i + 1}. ${opt}`).join('\n');
-
-  const systemPrompt = `You are an AI assistant helping to fill out job application forms.
-You must select the BEST option from a dropdown menu for the given question.
-
-CANDIDATE PROFILE:
-- Name: ${config.firstName || ''} ${config.lastName || ''}
-- Email: ${config.email || ''}
-- Location: ${config.city || ''}
-- Years of Experience: ${config.yearsOfExperience || ''}
-- Skills: ${skills || 'Not specified'}
-- Professional Summary: ${professionalSummary || 'Not provided'}
-- English Level: ${config.englishLevel || 'advanced'}
-- Visa Sponsorship Needed: ${config.visaSponsorship || 'no'}
-- Legally Authorized to Work: ${config.legallyAuthorized || 'yes'}
-- Willing to Relocate: ${config.willingToRelocate || 'yes'}
-- Has Driver's License: ${config.driversLicense || 'yes'}
-- Disability Status: ${config.disabilityStatus || 'no'}
-
-RULES:
-1. Respond with ONLY the number of the best option (e.g., "1" or "3")
-2. Choose the most appropriate option based on the candidate profile
-3. If the question is about experience level, choose based on years of experience
-4. If unsure, prefer positive/affirmative options
-5. Never respond with text, only the option number
-6. If options include "Select...", "Choose...", or similar placeholders, skip those`;
-
-  const userPrompt = `Question: "${question}"
-
-Available options:
-${optionsList}
-
-Which option number should I select? (respond with only the number)`;
-
-  try {
-    log(`🤖 AI selecting dropdown for: "${question.substring(0, 50)}..."`);
-
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.1,
-        max_tokens: 10
-      })
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      log(`❌ Groq API error: ${response.status} - ${error}`);
-      return null;
-    }
-
-    const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content?.trim();
-
-    if (answer) {
-      // Parse the number from the response
-      const optionNumber = parseInt(answer.replace(/\D/g, ''));
-      if (optionNumber > 0 && optionNumber <= options.length) {
-        log(`✅ AI selected option ${optionNumber}: "${options[optionNumber - 1].substring(0, 30)}..."`);
-        // Cache this selection for future similar questions
-        await saveAnswerToCache(question, options[optionNumber - 1]);
-        return optionNumber - 1; // Return 0-based index
-      }
-    }
-
-    return null;
-  } catch (error) {
-    log(`❌ AI dropdown selection failed: ${error.message}`);
-    return null;
-  }
-}
-
-// Save any filled answer to cache (for learning from user's manual inputs)
-async function learnFromFilledField(question, answer) {
-  if (!question || !answer || answer.length < 2) return;
-
-  // Don't cache common fields like name, email, phone
-  const skipPatterns = /^(email|phone|name|first.*name|last.*name|city|location|salary|experience|years)/i;
-  if (skipPatterns.test(normalizeQuestion(question))) return;
-
-  await saveAnswerToCache(question, answer);
-}
-
-// Save all answers from a modal to cache (called after successful submission)
-async function saveAllAnswersFromModal(modal) {
-  if (!modal) return;
-
-  log('💾 Saving all answers from application...');
-  let savedCount = 0;
-
-  // Common fields to skip (already handled by config)
-  const skipPatterns = /^(email|e-mail|phone|téléphone|name|nom|prénom|first|last|city|ville|location|salary|salaire|experience|années|years)/i;
-
-  // 1. Save text input answers
-  const textInputs = modal.querySelectorAll('input[type="text"], input[type="number"], textarea');
-  for (let input of textInputs) {
-    if (!input.value || input.value.length < 3) continue;
-
-    let labelText = getFieldLabel(input, modal);
-    if (!labelText || labelText.length < 5) continue;
-    if (skipPatterns.test(labelText)) continue;
-
-    await saveAnswerToCache(labelText, input.value);
-    savedCount++;
-  }
-
-  // 2. Save radio button answers
-  const radioFieldsets = modal.querySelectorAll('fieldset[data-test-form-builder-radio-button-form-component]');
-  for (let fieldset of radioFieldsets) {
-    const questionLabel = fieldset.querySelector('legend, span[class*="title"]');
-    const questionText = questionLabel ? questionLabel.textContent.trim() : '';
-    if (!questionText || questionText.length < 5) continue;
-    if (skipPatterns.test(questionText)) continue;
-
-    const checkedRadio = fieldset.querySelector('input[type="radio"]:checked');
-    if (checkedRadio) {
-      const radioLabel = fieldset.querySelector(`label[for="${checkedRadio.id}"]`);
-      const answer = radioLabel ? radioLabel.textContent.trim() : checkedRadio.value;
-      await saveAnswerToCache(questionText, answer);
-      savedCount++;
-    }
-  }
-
-  // 3. Save select dropdown answers
-  const selects = modal.querySelectorAll('select');
-  for (let select of selects) {
-    if (select.selectedIndex <= 0) continue;
-
-    let labelText = getFieldLabel(select, modal);
-    if (!labelText || labelText.length < 5) continue;
-    if (skipPatterns.test(labelText)) continue;
-
-    const selectedOption = select.options[select.selectedIndex];
-    if (selectedOption && selectedOption.text) {
-      await saveAnswerToCache(labelText, selectedOption.text);
-      savedCount++;
-    }
-  }
-
-  log(`💾 Saved ${savedCount} answers to cache (total: ${Object.keys(aiAnswersCache).length})`);
-}
-
-// Helper function to get label text for a field
-function getFieldLabel(field, modal) {
-  let labelText = '';
-
-  // aria-label
-  labelText += ' ' + (field.getAttribute('aria-label') || '');
-
-  // name attribute
-  labelText += ' ' + (field.getAttribute('name') || '');
-
-  // placeholder
-  labelText += ' ' + (field.getAttribute('placeholder') || '');
-
-  // Associated <label> element
-  const fieldId = field.getAttribute('id');
-  if (fieldId) {
-    const labelEl = modal.querySelector(`label[for="${fieldId}"]`);
-    if (labelEl) labelText += ' ' + labelEl.textContent;
-  }
-
-  // Parent label
-  const parentLabel = field.closest('label');
-  if (parentLabel) labelText += ' ' + parentLabel.textContent;
-
-  // Question in parent div
-  const parentDiv = field.closest('div[class*="form-component"]');
-  if (parentDiv) {
-    const questionEl = parentDiv.querySelector('label, legend, span[class*="label"], span[class*="title"]');
-    if (questionEl) labelText += ' ' + questionEl.textContent;
-  }
-
-  return labelText.trim();
 }
 
 // Convert base64 to File object for resume upload
@@ -1148,45 +643,20 @@ async function mainLoop() {
           await wait(600); // Ultra optimized job link wait
         }
 
-        // Chercher Easy Apply (Python ligne 1853) - MULTILINGUAL SUPPORT
-        let easyApplyBtn = null;
+        // Chercher Easy Apply (Python ligne 1853)
+        let easyApplyBtn = document.querySelector('button.jobs-apply-button[aria-label*="Easy"]');
 
-        // Try each Easy Apply pattern (EN, PT-BR, ES, FR, DE, IT)
-        for (const pattern of PATTERNS.easyApply) {
-          // Try jobs-apply-button first (standard Easy Apply button)
-          easyApplyBtn = document.querySelector(`button.jobs-apply-button[aria-label*="${pattern}"]`);
+        // ONLY on collections page: try additional selectors if not found
+        if (!easyApplyBtn && isCollectionsPage) {
+          // Try other Easy Apply selectors (must contain "Easy" to avoid external Apply)
+          easyApplyBtn = document.querySelector('button[aria-label*="Easy Apply"]');
           if (easyApplyBtn) {
-            log(`✅ Found Easy Apply button: "${pattern}"`);
-            break;
-          }
-
-          // Try any button with the pattern (fallback for collections page)
-          easyApplyBtn = document.querySelector(`button[aria-label*="${pattern}"]`);
-          if (easyApplyBtn) {
-            log(`✅ Found Easy Apply button (fallback): "${pattern}"`);
-            break;
-          }
-        }
-
-        // Additional fallback: search by button text content
-        if (!easyApplyBtn) {
-          const allButtons = Array.from(document.querySelectorAll('button.jobs-apply-button, button[class*="apply"]'));
-          for (const btn of allButtons) {
-            const btnText = btn.textContent.trim();
-            const ariaLabel = btn.getAttribute('aria-label') || '';
-            for (const pattern of PATTERNS.easyApply) {
-              if (btnText.includes(pattern) || ariaLabel.includes(pattern)) {
-                easyApplyBtn = btn;
-                log(`✅ Found Easy Apply button (text match): "${pattern}"`);
-                break;
-              }
-            }
-            if (easyApplyBtn) break;
+            log('📋 Found Easy Apply with collections selector');
           }
         }
 
         if (!easyApplyBtn) {
-          log('⏭️ No Easy Apply button found, skip');
+          log('Pas Easy Apply, skip');
           skippedCount++;
           updateSkippedCount();
           continue;
@@ -1425,13 +895,13 @@ async function mainLoop() {
 
             const label = labelText.toLowerCase();
 
-            // Years of experience - MULTILINGUAL PATTERNS
-            if (PATTERNS.fields.yearsExperience.test(label)) {
+            // Years of experience (EN/FR/ES/DE/IT)
+            if (label.match(/experience|years|expérience|années|años|jahre|anni|esperienza/)) {
               fill(input, config.yearsOfExperience || '2');
               log(`Years exp: ${config.yearsOfExperience || '2'}`);
             }
-            // Salary / Compensation - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.salary.test(label)) {
+            // Salary / Compensation (EN/FR/ES/DE/IT)
+            else if (label.match(/salary|compensation|remuneration|salaire|rémunération|sueldo|salario|gehalt|stipendio/)) {
               if (config.expectedSalary) {
                 fill(input, config.expectedSalary);
                 log(`Salary filled: ${config.expectedSalary}`);
@@ -1439,34 +909,19 @@ async function mainLoop() {
                 log(`⚠️ Salary question detected but no expected salary configured`);
               }
             }
-            // Email - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.email.test(label)) fill(input, config.email);
-            // First name - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.firstName.test(label)) fill(input, config.firstName);
-            // Last name - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.lastName.test(label)) fill(input, config.lastName);
-            // Phone - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.phone.test(label)) {
+            // Email
+            else if (label.match(/email|e-mail|courriel|correo/)) fill(input, config.email);
+            // First name (EN/FR/ES/DE/IT)
+            else if (label.match(/first|prénom|prenom|nombre|vorname|nome/)) fill(input, config.firstName);
+            // Last name (EN/FR/ES/DE/IT)
+            else if (label.match(/last|nom|apellido|nachname|cognome/)) fill(input, config.lastName);
+            // Phone (EN/FR/ES/DE/IT) - includes "portable", "cell", "móvil"
+            else if (label.match(/phone|téléphone|telefono|telefon|mobile|portable|cell|móvil|cellulare/)) {
               fill(input, config.phone);
               log(`Phone filled: ${config.phone}`);
             }
-            // Current Company/Employer - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.currentCompany.test(label) && config.currentCompany) {
-              fill(input, config.currentCompany);
-              log(`Current company filled: ${config.currentCompany}`);
-            }
-            // LinkedIn URL - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.linkedinUrl.test(label) && config.linkedinUrl) {
-              fill(input, config.linkedinUrl);
-              log(`LinkedIn URL filled: ${config.linkedinUrl}`);
-            }
-            // Portfolio URL - MULTILINGUAL PATTERNS
-            else if (PATTERNS.fields.portfolioUrl.test(label) && config.portfolioUrl) {
-              fill(input, config.portfolioUrl);
-              log(`Portfolio URL filled: ${config.portfolioUrl}`);
-            }
-            // City/Location - MULTILINGUAL PATTERNS with autocomplete handling
-            else if (PATTERNS.fields.city.test(label)) {
+            // City/Location (EN/FR/ES/DE/IT) - with autocomplete handling
+            else if (label.match(/city|ville|ciudad|stadt|città|location|localisation|ubicación|standort/)) {
               fill(input, config.city || '');
               log(`Location filled: ${config.city}`);
 
@@ -1520,70 +975,6 @@ async function mainLoop() {
                 input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
                 await wait(300);
               }
-            }
-            // UNKNOWN FIELD - Try AI if enabled
-            else if (enableAI && groqApiKey && labelText.trim().length > 5) {
-              log(`🤖 Unknown field detected: "${labelText.substring(0, 50)}..."`);
-              const aiAnswer = await getAIAnswer(labelText, {
-                fieldType: input.type,
-                maxLength: input.maxLength > 0 ? input.maxLength : null
-              });
-
-              if (aiAnswer) {
-                fill(input, aiAnswer);
-                log(`🤖 AI filled: "${aiAnswer.substring(0, 40)}..."`);
-              } else {
-                log(`⚠️ AI couldn't answer, leaving field empty`);
-              }
-            }
-          }
-
-          // 1b. TEXTAREA FIELDS (for longer answers like cover letter snippets, etc.)
-          const textareas = modal.querySelectorAll('textarea');
-          for (let textarea of textareas) {
-            if (textarea.value && textarea.value.length > 10) continue; // Skip if already filled
-
-            // Get label from multiple sources
-            let labelText = '';
-            labelText += ' ' + (textarea.getAttribute('aria-label') || '');
-            labelText += ' ' + (textarea.getAttribute('name') || '');
-            labelText += ' ' + (textarea.getAttribute('placeholder') || '');
-
-            const textareaId = textarea.getAttribute('id');
-            if (textareaId) {
-              const labelEl = modal.querySelector(`label[for="${textareaId}"]`);
-              if (labelEl) labelText += ' ' + labelEl.textContent;
-            }
-
-            const parentLabel = textarea.closest('label');
-            if (parentLabel) labelText += ' ' + parentLabel.textContent;
-
-            // Also check for question in parent div
-            const parentDiv = textarea.closest('div[class*="form-component"]');
-            if (parentDiv) {
-              const questionEl = parentDiv.querySelector('label, legend, span[class*="label"], span[class*="title"]');
-              if (questionEl) labelText += ' ' + questionEl.textContent;
-            }
-
-            if (labelText.trim().length < 5) continue;
-
-            log(`📝 Textarea detected: "${labelText.substring(0, 60)}..."`);
-
-            // Try AI for textarea
-            if (enableAI && groqApiKey) {
-              const aiAnswer = await getAIAnswer(labelText, {
-                fieldType: 'textarea',
-                maxLength: textarea.maxLength > 0 ? textarea.maxLength : 500
-              });
-
-              if (aiAnswer) {
-                fill(textarea, aiAnswer);
-                log(`🤖 AI filled textarea: "${aiAnswer.substring(0, 50)}..."`);
-              } else {
-                log(`⚠️ AI couldn't answer textarea question`);
-              }
-            } else {
-              log(`⚠️ Textarea requires AI but AI is not configured`);
             }
           }
 
@@ -1773,20 +1164,15 @@ async function mainLoop() {
               desiredAnswer = config.driversLicense;
               log(`⚙️ Driver's license question detected, answering: ${desiredAnswer}`);
             }
-            // Disability/PCD question (multilingual)
-            else if (questionText.match(/disability|disabled|pcd|pessoa com deficiência|deficiência|discapacidad|special needs|handicap/i) && config.disabilityStatus) {
-              desiredAnswer = config.disabilityStatus;
-              log(`⚙️ Disability/PCD question detected, answering: ${desiredAnswer}`);
-            }
 
-            // Click the appropriate answer (Yes or No) - MULTILINGUAL SUPPORT
+            // Click the appropriate answer (Yes or No)
             for (let radio of radioInputs) {
               const radioLabel = fieldset.querySelector(`label[for="${radio.id}"]`);
-              const radioText = radioLabel ? radioLabel.textContent.trim() : '';
+              const radioText = radioLabel ? radioLabel.textContent.trim().toLowerCase() : '';
 
-              // Match Yes/No using multilingual patterns
-              const isYes = PATTERNS.yesPatterns.test(radioText);
-              const isNo = PATTERNS.noPatterns.test(radioText);
+              // Match Yes/No in multiple languages
+              const isYes = radioText.match(/^(yes|oui|sí|si|ja|y)$/);
+              const isNo = radioText.match(/^(no|non|nein|n)$/);
 
               if ((desiredAnswer === 'yes' && isYes) || (desiredAnswer === 'no' && isNo)) {
                 if (!radio.checked) {
@@ -1802,10 +1188,10 @@ async function mainLoop() {
             if (!answered) {
               for (let radio of radioInputs) {
                 const radioLabel = fieldset.querySelector(`label[for="${radio.id}"]`);
-                const radioText = radioLabel ? radioLabel.textContent.trim() : '';
+                const radioText = radioLabel ? radioLabel.textContent.trim().toLowerCase() : '';
 
-                // Yes in multiple languages using patterns
-                if (PATTERNS.yesPatterns.test(radioText)) {
+                // Yes in multiple languages: EN, FR, ES, DE, IT
+                if (radioText.match(/^(yes|oui|sí|si|ja|y)$/)) {
                   if (!radio.checked) {
                     radioLabel ? radioLabel.click() : radio.click();
                     log(`Radio Yes (default): ${questionText.substring(0, 30)}`);
@@ -1844,102 +1230,47 @@ async function mainLoop() {
             const label = labelText.toLowerCase();
             const options = Array.from(select.options);
 
-            // Essayer de trouver uma opção inteligente - MULTILINGUAL PATTERNS
+            // Essayer de trouver une option intelligente
             let selectedOption = null;
 
             // Language proficiency questions (English, French, Spanish, etc.)
-            const proficiencyPattern = /proficiency|level.*english|level.*french|level.*spanish|level.*german|niveau.*anglais|niveau.*français|nivel.*inglés|nível.*inglês|proficiência/i;
-
-            if (proficiencyPattern.test(label)) {
+            // "What is your level of proficiency in English?"
+            if (label.match(/proficiency|level.*english|level.*french|level.*spanish|level.*german|niveau.*anglais|niveau.*français|nivel.*inglés/)) {
               // Priority order: Native > Fluent > Professional > Intermediate
-              selectedOption = options.find(opt => PATTERNS.proficiency.native.test(opt.text));
+              selectedOption = options.find(opt => {
+                const text = opt.text.toLowerCase();
+                return text.includes('native') || text.includes('bilingual') || text.includes('bilingue') || text.includes('langue maternelle');
+              });
 
               if (!selectedOption) {
-                selectedOption = options.find(opt => PATTERNS.proficiency.fluent.test(opt.text));
+                selectedOption = options.find(opt => {
+                  const text = opt.text.toLowerCase();
+                  return text.includes('fluent') || text.includes('courant') || text.includes('fluide');
+                });
               }
 
               if (!selectedOption) {
-                selectedOption = options.find(opt => PATTERNS.proficiency.professional.test(opt.text));
+                selectedOption = options.find(opt => {
+                  const text = opt.text.toLowerCase();
+                  return text.includes('professional') || text.includes('professionnel') || text.includes('advanced');
+                });
               }
 
               log(`Dropdown language proficiency: ${selectedOption ? selectedOption.text : 'fallback'}`);
             }
-            // General language/English questions - use user's configured English level
-            else if (PATTERNS.englishLevelQuestion.test(label)) {
-              const userLevel = config.englishLevel || 'advanced';
-
-              // Map user's selection to dropdown option
-              if (userLevel === 'native') {
-                selectedOption = options.find(opt => PATTERNS.proficiency.native.test(opt.text));
-              } else if (userLevel === 'fluent') {
-                selectedOption = options.find(opt => PATTERNS.proficiency.fluent.test(opt.text));
-              } else if (userLevel === 'advanced') {
-                selectedOption = options.find(opt => PATTERNS.proficiency.professional.test(opt.text));
-                if (!selectedOption) selectedOption = options.find(opt => /advanced|avançado|avanzado/i.test(opt.text));
-              } else if (userLevel === 'intermediate') {
-                selectedOption = options.find(opt => PATTERNS.proficiency.intermediate.test(opt.text));
-              } else if (userLevel === 'basic') {
-                selectedOption = options.find(opt => PATTERNS.proficiency.basic.test(opt.text));
-              }
-
-              log(`Dropdown English level: ${selectedOption ? selectedOption.text : 'fallback'} (user: ${userLevel})`);
-            }
-            // Race/Ethnicity questions - use user's configured ethnicity
-            else if (PATTERNS.ethnicityQuestion.test(label)) {
-              const userEthnicity = config.ethnicity || 'prefer_not_to_say';
-
-              // Map user's selection to dropdown option
-              if (userEthnicity === 'prefer_not_to_say') {
-                selectedOption = options.find(opt => PATTERNS.ethnicityOptions.preferNotToSay.test(opt.text));
-              } else if (userEthnicity === 'white') {
-                selectedOption = options.find(opt => PATTERNS.ethnicityOptions.white.test(opt.text));
-              } else if (userEthnicity === 'black') {
-                selectedOption = options.find(opt => PATTERNS.ethnicityOptions.black.test(opt.text));
-              } else if (userEthnicity === 'hispanic') {
-                selectedOption = options.find(opt => PATTERNS.ethnicityOptions.hispanic.test(opt.text));
-              } else if (userEthnicity === 'asian') {
-                selectedOption = options.find(opt => PATTERNS.ethnicityOptions.asian.test(opt.text));
-              } else if (userEthnicity === 'indigenous') {
-                selectedOption = options.find(opt => PATTERNS.ethnicityOptions.indigenous.test(opt.text));
-              } else if (userEthnicity === 'mixed') {
-                selectedOption = options.find(opt => PATTERNS.ethnicityOptions.mixed.test(opt.text));
-              }
-
-              log(`Dropdown ethnicity: ${selectedOption ? selectedOption.text : 'fallback'} (user: ${userEthnicity})`);
-            }
-            // Other language questions (French, Spanish, etc.)
-            else if (/language|langue|french|français|spanish|español|german|deutsch|português|idioma/i.test(label)) {
+            // General language questions
+            else if (label.match(/english|anglais|language|langue|french|français|spanish|español|german|deutsch/)) {
               selectedOption = options.find(opt => {
-                const text = opt.text;
-                return PATTERNS.proficiency.native.test(text) ||
-                       PATTERNS.proficiency.fluent.test(text) ||
-                       PATTERNS.proficiency.professional.test(text);
+                const text = opt.text.toLowerCase();
+                return text.includes('native') || text.includes('bilingual') || text.includes('fluent') ||
+                       text.includes('courant') || text.includes('professionnel') || text.includes('bilingue');
               });
               log(`Dropdown language: ${selectedOption ? selectedOption.text : 'fallback'}`);
             }
 
-            // AI FALLBACK: If no pattern matched, use AI to select the best option
-            if (!selectedOption && enableAI && groqApiKey && options.length > 1) {
-              log(`🤖 No pattern matched for dropdown, asking AI: "${labelText.substring(0, 50)}..."`);
-
-              // Get option texts for AI (skip placeholder options)
-              const skipPatterns = /^(select|choose|choisir|selecione|seleccione|seleccionar|elegir|wählen|scegli|--)/i;
-              const validOptions = options.filter(opt => opt.text && !skipPatterns.test(opt.text.trim()));
-              const optionTexts = validOptions.map(opt => opt.text.trim());
-
-              if (optionTexts.length > 0) {
-                const aiSelectedIndex = await getAIDropdownSelection(labelText.trim(), optionTexts);
-                if (aiSelectedIndex !== null && aiSelectedIndex >= 0) {
-                  selectedOption = validOptions[aiSelectedIndex];
-                  log(`🤖 AI selected: "${selectedOption.text}"`);
-                }
-              }
-            }
-
-            // Last resort fallback: take option 1 (not 0 as it's often "Select...")
+            // Si pas trouvé, prendre option 1 (pas 0 car souvent "Select...")
             if (!selectedOption && options.length > 1) {
               selectedOption = options[1];
-              log(`⚠️ Fallback: selecting first non-placeholder option`);
             }
 
             if (selectedOption) {
@@ -1974,58 +1305,47 @@ async function mainLoop() {
             dropdown.click();
             await wait(500);
 
-            // Chercher les options - MULTILINGUAL PATTERNS
+            // Chercher les options
             const listbox = document.querySelector('[role="listbox"]');
             if (listbox) {
               const options = Array.from(listbox.querySelectorAll('[role="option"]'));
               if (options.length > 0) {
                 let selectedOption = null;
 
-                // Language proficiency questions - using multilingual patterns
-                const proficiencyPattern = /proficiency|level.*english|level.*french|level.*spanish|niveau.*anglais|nivel.*inglés|nível.*inglês|proficiência/i;
-
-                if (proficiencyPattern.test(question)) {
+                // Language proficiency questions
+                if (question.match(/proficiency|level.*english|level.*french|level.*spanish|niveau.*anglais|nivel.*inglés/)) {
                   // Try: Native/Bilingual first
-                  selectedOption = options.find(opt => PATTERNS.proficiency.native.test(opt.textContent));
+                  selectedOption = options.find(opt => {
+                    const text = opt.textContent.toLowerCase();
+                    return text.includes('native') || text.includes('bilingual') || text.includes('bilingue');
+                  });
 
                   // Then: Fluent
                   if (!selectedOption) {
-                    selectedOption = options.find(opt => PATTERNS.proficiency.fluent.test(opt.textContent));
+                    selectedOption = options.find(opt => {
+                      const text = opt.textContent.toLowerCase();
+                      return text.includes('fluent') || text.includes('courant');
+                    });
                   }
 
                   // Then: Professional
                   if (!selectedOption) {
-                    selectedOption = options.find(opt => PATTERNS.proficiency.professional.test(opt.textContent));
+                    selectedOption = options.find(opt => {
+                      const text = opt.textContent.toLowerCase();
+                      return text.includes('professional') || text.includes('professionnel') || text.includes('advanced');
+                    });
                   }
 
                   log(`Custom dropdown language: ${selectedOption ? selectedOption.textContent.substring(0, 30) : 'fallback'}`);
                 }
 
-                // AI FALLBACK: If no pattern matched, use AI to select the best option
-                if (!selectedOption && enableAI && groqApiKey) {
-                  log(`🤖 No pattern matched for custom dropdown, asking AI: "${questionText.substring(0, 50)}..."`);
-
-                  // Get option texts for AI (skip placeholder options)
-                  const skipPatternsAI = /^(select|choose|choisir|selecione|seleccione|seleccionar|elegir|wählen|scegli|--)/i;
-                  const validOptions = options.filter(opt => opt.textContent && !skipPatternsAI.test(opt.textContent.trim()));
-                  const optionTexts = validOptions.map(opt => opt.textContent.trim());
-
-                  if (optionTexts.length > 0) {
-                    const aiSelectedIndex = await getAIDropdownSelection(questionText.trim(), optionTexts);
-                    if (aiSelectedIndex !== null && aiSelectedIndex >= 0) {
-                      selectedOption = validOptions[aiSelectedIndex];
-                      log(`🤖 AI selected: "${selectedOption.textContent.substring(0, 30)}"`);
-                    }
-                  }
-                }
-
-                // Last resort: take first valid option (not "Select...", "Selecione...", etc.)
+                // If no smart match, take first valid option (not "Select...")
                 if (!selectedOption) {
-                  const skipPatterns = /^(select|choose|choisir|selecione|seleccione|seleccionar|elegir|wählen|scegli)/i;
-                  selectedOption = options.find(opt => !skipPatterns.test(opt.textContent.trim()));
-                  if (selectedOption) {
-                    log(`⚠️ Fallback: selecting first non-placeholder option`);
-                  }
+                  selectedOption = options.find(opt =>
+                    !opt.textContent.toLowerCase().includes('select') &&
+                    !opt.textContent.toLowerCase().includes('choose') &&
+                    !opt.textContent.toLowerCase().includes('choisir')
+                  );
                 }
 
                 if (selectedOption) {
@@ -2039,23 +1359,20 @@ async function mainLoop() {
 
           await wait(1500);
 
-          // Chercher bouton Next ou Submit - MULTILINGUAL SUPPORT
+          // Chercher bouton Next ou Submit
           const nextBtn = Array.from(modal.querySelectorAll('button')).find(btn => {
-            const text = btn.textContent.toLowerCase().trim();
-            // Check against all next/submit patterns
-            const isNextBtn = PATTERNS.nextButtons.some(pattern => text.includes(pattern.toLowerCase()));
-            const isSubmitBtn = PATTERNS.submitButtons.some(pattern => text.includes(pattern.toLowerCase()));
-            return isNextBtn || isSubmitBtn;
+            const text = btn.textContent.toLowerCase();
+            return text.includes('next') || text.includes('suivant') ||
+                   text.includes('review') || text.includes('submit') || text.includes('soumettre');
           });
 
           if (!nextBtn) {
-            log('⏭️ No Next/Submit button found');
+            log('Pas de bouton trouvé');
             break;
           }
 
-          // Check if it's a submit button (multilingual)
-          const btnText = nextBtn.textContent.toLowerCase().trim();
-          const isSubmit = PATTERNS.submitButtons.some(pattern => btnText.includes(pattern.toLowerCase()));
+          const isSubmit = nextBtn.textContent.toLowerCase().includes('submit') ||
+                          nextBtn.textContent.toLowerCase().includes('soumettre');
 
           // IMPORTANT: Unfollow AVANT de cliquer Submit (Python ligne 1974)
           if (isSubmit) {
@@ -2162,9 +1479,6 @@ async function mainLoop() {
           if (isSubmit) {
             log('✅ Submit cliqué !');
             appliedCount++;
-
-            // Save all answers from this application to cache for future reference
-            await saveAllAnswersFromModal(modal);
 
             // Sauvegarder le job appliqué pour export
             appliedJobs.push({
@@ -2295,34 +1609,28 @@ async function mainLoop() {
         }
       }
 
-      // METHOD 2: Try "Next" button (fallback) - MULTILINGUAL SUPPORT
+      // METHOD 2: Try "Next" button (fallback)
       if (!nextPageClicked) {
-        log('🔍 Looking for Next page button...');
-        const nextButtonElements = Array.from(document.querySelectorAll('button, [role="button"]'));
+        log('🔍 Recherche bouton "Next"...');
+        const nextButtons = Array.from(document.querySelectorAll('button, [role="button"]'));
 
-        // Multilingual "next" patterns for pagination
-        const paginationNextPatterns = ['next', 'próximo', 'próxima', 'siguiente', 'suivant', 'weiter', 'avanti'];
-
-        for (let btn of nextButtonElements) {
+        for (let btn of nextButtons) {
           if (!btn.offsetParent) continue; // Skip hidden
 
           const btnText = btn.textContent.trim().toLowerCase();
           const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
 
           // Check for "Next" in multiple languages
-          const isNextButton = paginationNextPatterns.some(pattern =>
-            btnText === pattern || ariaLabel.includes(pattern)
-          );
+          if (btnText === 'next' || btnText === 'suivant' || btnText === 'siguiente' ||
+              ariaLabel.includes('next') || ariaLabel.includes('suivant')) {
 
-          if (isNextButton) {
             // Make sure it's the pagination next, not a form next
             const isPaginationNext = btn.closest('.jobs-search-pagination') ||
                                     btn.closest('[class*="pagination"]') ||
-                                    btn.getAttribute('aria-label')?.includes('page') ||
-                                    btn.getAttribute('aria-label')?.includes('página');
+                                    btn.getAttribute('aria-label')?.includes('page');
 
             if (isPaginationNext) {
-              log('✅ Clicking Next page button');
+              log('✅ Clique sur bouton Next');
               await click(btn);
               await wait(1000); // Ultra optimized page load wait
               nextPageClicked = true;
@@ -2332,18 +1640,9 @@ async function mainLoop() {
         }
       }
 
-      // METHOD 3: Try icon-based next button (LinkedIn uses icons) - MULTILINGUAL
+      // METHOD 3: Try icon-based next button (LinkedIn uses icons)
       if (!nextPageClicked) {
-        // Build multilingual selector for pagination next buttons
-        let iconNextBtn = null;
-        for (const label of PATTERNS.paginationNext) {
-          iconNextBtn = document.querySelector(`.jobs-search-pagination button[aria-label*="${label}"]`);
-          if (iconNextBtn) break;
-        }
-        // Fallback to icon-based detection
-        if (!iconNextBtn) {
-          iconNextBtn = document.querySelector('.jobs-search-pagination button svg[class*="chevron-right"]')?.closest('button');
-        }
+        const iconNextBtn = document.querySelector('.jobs-search-pagination button[aria-label*="Next"], .jobs-search-pagination button svg[class*="chevron-right"]')?.closest('button');
         if (iconNextBtn && iconNextBtn.offsetParent !== null && !iconNextBtn.disabled) {
           log('✅ Clique sur bouton Next (icône)');
           await click(iconNextBtn);
@@ -2544,14 +1843,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         config = await chrome.storage.sync.get([
           'firstName', 'lastName', 'email', 'phone', 'phoneCountryCode',
           'yearsOfExperience', 'maxYearsRequired', 'blacklistKeywords', 'city', 'country', 'expectedSalary',
-          'currentCompany', 'linkedinUrl', 'portfolioUrl',
-          'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense', 'disabilityStatus',
-          'ethnicity', 'englishLevel',
-          'groqApiKey', 'enableAI', 'professionalSummary', 'skills', 'language'
+          'visaSponsorship', 'legallyAuthorized', 'willingToRelocate', 'driversLicense'
         ]);
 
         // Charger les compteurs depuis storage
-        const local = await chrome.storage.local.get(['appliedCount', 'skippedCount', 'appliedJobs', 'resumeFile', 'resumeFileName', 'resumeFileType', 'aiAnswersCache']);
+        const local = await chrome.storage.local.get(['appliedCount', 'skippedCount', 'appliedJobs', 'resumeFile', 'resumeFileName', 'resumeFileType']);
         appliedCount = local.appliedCount || 0;
         skippedCount = local.skippedCount || 0;
         appliedJobs = local.appliedJobs || [];
@@ -2561,29 +1857,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         resumeFileName = local.resumeFileName || null;
         resumeFileType = local.resumeFileType || null;
 
-        // Load AI settings
-        groqApiKey = config.groqApiKey || null;
-        enableAI = config.enableAI !== false;
-        professionalSummary = config.professionalSummary || '';
-        skills = config.skills || '';
-        aiAnswersCache = local.aiAnswersCache || {};
-
-        // Load language preference
-        currentLanguage = config.language || 'en';
-
         if (resumeFile) {
           log(`📄 Resume loaded: ${resumeFileName}`);
         } else {
           log('ℹ️ No resume uploaded - file upload fields will be skipped');
-        }
-
-        // Log AI status
-        if (enableAI && groqApiKey) {
-          log(`🤖 AI enabled with ${Object.keys(aiAnswersCache).length} cached answers`);
-        } else if (enableAI) {
-          log('⚠️ AI enabled but no API key configured');
-        } else {
-          log('ℹ️ AI disabled');
         }
 
         log(`Config: ${config.firstName} ${config.lastName}, exp: ${config.yearsOfExperience || 2}, max required: ${config.maxYearsRequired || 3}`);
@@ -2656,14 +1933,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-console.log('%c🔒 EASYAPPLYMAX v1.6.0 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
+console.log('%c🔒 EASYAPPLYMAX v1.5.0 - MANUAL INJECTION MODE', 'color: #0a66c2; font-weight: bold; font-size: 16px;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
 console.log('%c✅ Script injected ONLY when you clicked START', 'color: green; font-weight: bold;');
 console.log('%c🔒 NO automatic loading on LinkedIn pages', 'color: green; font-weight: bold;');
 console.log('%c🚀 Bot will start automatically after injection', 'color: orange; font-weight: bold;');
 console.log('%c📋 Supports: /jobs/search/ AND /jobs/collections/', 'color: cyan; font-weight: bold;');
 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0a66c2; font-weight: bold;');
-log('Script loaded v1.6.0 - Supports /jobs/search/ and /jobs/collections/ + AI-powered answers');
+log('Script loaded v1.5.0 - Supports /jobs/search/ and /jobs/collections/');
 
 // SECURITY: Clear ALL running state on page load to prevent auto-start
 // Bot will ONLY start when user explicitly clicks "Start" button

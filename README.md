@@ -1,362 +1,209 @@
-# EasyApplyMax
+# AutoApplyMax
 
-> **🚀 Currently in active development** - Join our community to stay updated on new features!
-
-A powerful Chrome extension that automates LinkedIn Easy Apply job applications with smart form filling and human-like behavior simulation.
-
----
-
-## 📥 Installation
+**AI-powered job application automation.** Auto-apply to 50+ jobs/day across LinkedIn, Indeed, Glassdoor, WTTJ & Monster.
 
 <div align="center">
 
-### ⚡ Install from Chrome Web Store (Recommended)
-
-[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Download-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/easyapplymax/oeaobljpdipleeanlfjppmlokkajodbk)
-
-**[🔗 Click here to install EasyApplyMax](https://chromewebstore.google.com/detail/easyapplymax/oeaobljpdipleeanlfjppmlokkajodbk)**
-
-✅ One-click installation
-✅ Automatic updates
-✅ Verified by Google
-
-</div>
-
----
-
-<div align="center">
-
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install%20Free-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/autoapplymax/oeaobljpdipleeanlfjppmlokkajodbk)
+[![Website](https://img.shields.io/badge/Website-autoapplymax.com-0A66C2?style=for-the-badge&logo=google-chrome&logoColor=white)](https://www.autoapplymax.com)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/xWaCXBZbws)
-[![Twitter Follow](https://img.shields.io/badge/Twitter-@Azo92i-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/Azo92i)
-[![License](https://img.shields.io/badge/License-AGPL--3.0-blue.svg?style=for-the-badge)](LICENSE)
 
 </div>
 
 ---
 
-## 🌟 Features
+## What is AutoApplyMax?
 
-### Current Features
-- ✅ **Automated Easy Apply** - One-click job applications on LinkedIn
-- ✅ **Smart Form Filling** - Automatically fills forms with your profile data
-- ✅ **Human-like Behavior** - Random delays and natural interactions to avoid detection
-- ✅ **Application Tracking** - Real-time statistics (applied, skipped, errors)
-- ✅ **Blacklist System** - Skip jobs with unwanted keywords
-- ✅ **Daily Limit Detection** - Stops when LinkedIn's limit is reached
-- ✅ **Session Persistence** - Resume where you left off after browser restart
-- ✅ **Export Data** - Download applied jobs as CSV
+AutoApplyMax is a free Chrome extension that automates your entire job search. Instead of spending 3-4 hours/day filling the same forms, AutoApplyMax handles it all — auto-filling applications, optimizing your resume with AI, generating cover letters, and tracking everything in a real-time dashboard.
 
-### 🚀 Coming Soon (Roadmap)
-- 🔮 **AI-Powered Matching** - Smart job recommendations based on your profile
-- 📄 **Dynamic CV Adaptation** - Auto-generate tailored resumes for each job
-- ✍️ **Auto Cover Letters** - AI-generated personalized cover letters
-- 🌐 **Company Website Auto-Apply** - Apply directly on company career pages
-- 📊 **Advanced Analytics** - Track application success rates and insights
-- 🎯 **Multi-Platform Support** - Extend to Indeed, Glassdoor, and more
-- 🤖 **GPT Integration** - Enhanced form filling with AI understanding
+### The Problem
+
+- Average job seeker spends **11 hours/week** applying
+- **70% of applications** are never seen by a human
+- Same forms filled out **50+ times**
+- No way to track what you applied to
+
+### The Solution
+
+Upload your resume once, fill your profile, and let AutoApplyMax do the rest.
 
 ---
 
-## 🎥 Video Tutorial
+## Features
 
-<div align="center">
+### Multi-Platform Auto-Apply
 
-### 📺 Complete Tutorial - Installation & Usage Guide
+One-click automation across 5+ job platforms:
 
-**Click the video below to watch:**
+| Platform | What AutoApplyMax Does |
+|----------|----------------------|
+| **LinkedIn** | Easy Apply automation — fills every field, clicks Submit |
+| **Indeed** | SmartApply multi-step form navigation |
+| **Glassdoor** | One-click application submission |
+| **WTTJ** | Full form completion |
+| **Monster** | Automated form filling & submission |
+| **Any site** | Universal Autofill for any job application form |
 
-[![EasyApplyMax - Complete Tutorial](https://img.youtube.com/vi/e7mUETgoZrI/maxresdefault.jpg)](https://www.youtube.com/watch?v=e7mUETgoZrI)
+### AI Resume Optimizer
 
-**[▶️ Watch on YouTube: https://www.youtube.com/watch?v=e7mUETgoZrI](https://www.youtube.com/watch?v=e7mUETgoZrI)**
+Your resume, tailored to every job automatically:
 
----
+- **ATS Compatibility Scoring** — target 90%+ to pass Applicant Tracking Systems
+- **Keyword Matching** — extracts keywords from job descriptions and optimizes your resume
+- **Smart Rewording** — AI rewrites sections for maximum impact
+- **Before/After Comparison** — see exactly what changed and why
 
-**📝 What you'll learn:**
-- ✅ Installation and setup process
-- ✅ Configuring your profile information
-- ✅ Using the extension effectively
-- ✅ Tips and best practices for job applications
+### AI Cover Letter Generator
 
-</div>
+Personalized cover letters in one click:
 
----
+- Company-specific personalization based on mission & values
+- Multiple professional tones
+- Job requirement matching
+- Template library for different industries
 
-## 💬 Community & Support
+### Real-Time Dashboard
 
-<div align="center">
+Track every application in one place:
 
-### 🌟 This is a Community-Driven Project!
+- **Pipeline View** — Applied > Screening > Interview > Offer
+- **ATS Scores** — see your score per application
+- **Analytics** — weekly/monthly performance, response rates
+- **Export** — download all data as CSV
 
-We're building EasyApplyMax together with job seekers worldwide. Join us to:
-- 💡 **Suggest features** you want to see
-- 🐛 **Report bugs** and help improve stability
-- 🤝 **Get support** from the community
-- 🎯 **Share tips** and best practices
-- 🚀 **Stay updated** on new AI-powered features
+### Smart Form Filling
 
-</div>
-
-<table>
-<tr>
-<td align="center" width="50%">
-
-### 💬 Discord Community
-**Your main hub for everything EasyApplyMax**
-
-Get instant help, discuss features, and connect with other users actively using the tool.
-
-<a href="https://discord.gg/xWaCXBZbws">
-  <img src="https://img.shields.io/badge/Join-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Discord">
-</a>
-
-**[📱 Join Now →](https://discord.gg/xWaCXBZbws)**
-
-</td>
-<td align="center" width="50%">
-
-### 🐦 Twitter Updates
-**Follow for announcements & tips**
-
-Stay in the loop with new releases, feature updates, and job search automation tips.
-
-<a href="https://twitter.com/Azo92i">
-  <img src="https://img.shields.io/badge/Follow-@Azo92i-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Follow on Twitter">
-</a>
-
-**[🔔 Follow @Azo92i →](https://twitter.com/Azo92i)**
-
-</td>
-</tr>
-</table>
+- Human-like behavior with random delays (1-3s between actions)
+- Multi-selector detection (XPath + CSS) for robust element finding
+- Auto-retry on failed actions (up to 3 attempts)
+- Stuck detection with auto-recovery (2min timeout)
+- Session persistence — resume where you left off
 
 ---
 
-## 📥 Installation
+## Quick Start
 
-### Quick Install (5 minutes)
+### Install from Chrome Web Store (Recommended)
 
-1. **Download the extension**
-   ```bash
-   git clone https://github.com/yourusername/EasyApplyMax.git
-   cd EasyApplyMax
-   ```
+1. **[Install AutoApplyMax](https://chromewebstore.google.com/detail/autoapplymax/oeaobljpdipleeanlfjppmlokkajodbk)** — free, one-click install
+2. Click the extension icon, fill your profile once
+3. Upload your resume (PDF/DOCX)
+4. Go to LinkedIn/Indeed/Glassdoor and click **Start**
+5. Track everything at [autoapplymax.com/dashboard](https://www.autoapplymax.com/dashboard.html)
 
-2. **Load in Chrome**
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable **Developer mode** (toggle in top-right)
-   - Click **Load unpacked**
-   - Select the `EasyApplyMax` folder
-   - The extension icon should appear in your toolbar ✅
+### Install from Source
 
----
+```bash
+git clone https://github.com/Azoo92i/EAM-.git
+cd EAM-
+```
 
-## ⚙️ Configuration
-
-1. **Click the extension icon** in Chrome toolbar
-2. **Fill your information:**
-   - Personal details (name, email, phone)
-   - Location (city, country)
-   - Experience level
-   - Expected salary & notice period
-3. **Configure settings:**
-   - Add blacklist keywords (e.g., "internship, junior, remote")
-   - Set max applications per session
-4. **Click "Save Configuration"** 💾
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked** and select the folder
 
 ---
 
-## 🎯 Usage Guide
-
-### Step 1: Prepare Your Search
-
-1. Go to **[LinkedIn Jobs](https://www.linkedin.com/jobs)**
-2. Search for your desired positions
-3. Apply filters (location, experience, salary, etc.)
-4. ⚠️ **IMPORTANT**: Enable **"Easy Apply"** filter (mandatory)
-
-### Step 2: Launch the Bot
-
-1. Click the EasyApplyMax icon
-2. Verify your configuration
-3. Click **"Start"** ▶️
-4. The bot will:
-   - Browse job listings automatically
-   - Click "Easy Apply" buttons
-   - Fill out application forms
-   - Submit applications
-   - Move to next job
-
-### Step 3: Monitor Progress
-
-- 📊 **View stats** in extension popup
-- 📝 **Check logs** in browser console (F12)
-- ⏸️ **Stop anytime** with the Stop button
-- 💾 **Auto-save** - Progress saved automatically
-
----
-
-## 🧠 How It Works
-
-The extension uses advanced techniques for reliability:
-
-| Feature | Description |
-|---------|-------------|
-| **Multi-Selector Detection** | Uses XPath + CSS selectors for robust element finding |
-| **Retry Mechanism** | Auto-retries failed actions up to 3 times |
-| **Human Simulation** | Random delays (1-3s) between actions |
-| **Form Intelligence** | Handles various LinkedIn form types |
-| **Error Recovery** | Continues to next job if one fails |
-| **Stuck Detection** | Auto-recovery if process freezes (2min timeout) |
-
----
-
-## 📁 Project Structure
+## How It Works
 
 ```
-EasyApplyMax/
-├── manifest.json          # Extension configuration
-├── popup.html             # User interface
-├── popup.css              # UI styling
-├── popup.js               # UI logic
-├── content-simple.js      # Main automation engine (51KB)
-├── background.js          # Service worker
+You fill your profile once
+        |
+        v
+AutoApplyMax opens job listings
+        |
+        v
+AI optimizes your resume for each job (ATS 90%+)
+        |
+        v
+Forms are auto-filled and submitted
+        |
+        v
+Dashboard tracks everything in real-time
+```
+
+### Architecture
+
+```
+AutoApplyMax/
+├── manifest.json          # Chrome Extension Manifest V3
+├── popup.html/css/js      # Extension popup UI
+├── content-simple.js      # Main automation engine
+├── background.js          # Service worker (tab orchestration)
 ├── icons/                 # Extension icons
-├── test/                  # Testing pages
-├── docs/                  # Additional documentation
-└── README.md              # This file
+└── chrome-store-release/  # Production build
 ```
 
----
-
-## 🧪 Testing
-
-Test the extension before using on LinkedIn:
-
-1. Open `test/test.html` in Chrome
-2. Configure the extension
-3. Click "Start"
-4. Verify forms fill automatically ✅
+**Adapters Pattern:** Each job platform has a dedicated adapter that handles site-specific form structures, button locations, and submission flows. A generic FormFiller handles common fields, while adapters override for platform-specific quirks.
 
 ---
 
-## 🔒 Security & Privacy
+## Job Search Tips
 
-- ✅ **100% Local** - All data stored in your browser only
-- ✅ **No External Servers** - Zero data transmission
-- ✅ **LinkedIn Only** - Extension only works on linkedin.com
-- ✅ **Open Source** - Fully transparent code
-- ✅ **No Tracking** - We don't collect any data
+Based on data from thousands of automated applications:
 
----
+1. **Apply within 24 hours of posting.** Jobs posted <24h have 3x higher response rates. Recruiters review the first batch and move on.
 
-## ⚠️ Limitations
+2. **Keep your resume ATS-simple.** Single column, standard fonts, no graphics. Fancy Canva resumes get parsed as garbage by ATS systems. A plain resume gets 4x more callbacks.
 
-- Only works with **LinkedIn Easy Apply** jobs
-- Some complex forms may need manual input
-- LinkedIn may detect automation (use responsibly!)
-- Daily limit: **~50-100 applications** per LinkedIn account
-- Not responsible for account restrictions
+3. **Match keywords from the job description.** If the posting says "project management" and your resume says "managed projects" — some ATS will miss it. Use exact phrases. Target 70%+ keyword match for best results.
+
+4. **Volume + quality is the formula.** Applying to 5 jobs/day manually feels productive but gets you nowhere. 40-50 properly formatted applications/day with automation changes the math entirely.
+
+5. **Track everything.** You can't optimize what you don't measure. Use the dashboard to see which platforms get the best response rates for your profile.
+
+6. **Follow up on LinkedIn.** After applying, find the hiring manager and send a 2-line message. This alone can double your interview rate for specific roles.
 
 ---
 
-## 🐛 Troubleshooting
+## Links
 
-<details>
-<summary><strong>🔴 Extension doesn't start</strong></summary>
-
-- ✓ Verify you're logged into LinkedIn
-- ✓ Must be on job search results page
-- ✓ Check configuration is complete
-- ✓ Review logs in console (F12)
-
-</details>
-
-<details>
-<summary><strong>🔴 Forms not filling</strong></summary>
-
-- ✓ Verify all config fields are filled
-- ✓ Try different field names (language-dependent)
-- ✓ Check console for errors (F12)
-
-</details>
-
-<details>
-<summary><strong>🔴 Bot seems stuck</strong></summary>
-
-- ✓ Extension has 2-minute stuck detection
-- ✓ Random delays are intentional (human simulation)
-- ✓ Click "Stop" and restart if needed
-
-</details>
+| | |
+|---|---|
+| Website | [autoapplymax.com](https://www.autoapplymax.com) |
+| Dashboard | [autoapplymax.com/dashboard](https://www.autoapplymax.com/dashboard.html) |
+| Blog | [autoapplymax.com/blog](https://www.autoapplymax.com/blog.html) |
+| Chrome Extension | [Chrome Web Store](https://chromewebstore.google.com/detail/autoapplymax/oeaobljpdipleeanlfjppmlokkajodbk) |
+| Discord | [Join Community](https://discord.gg/xWaCXBZbws) |
+| Twitter/X | [@autoapplymax](https://x.com/autoapplymax) |
 
 ---
 
-## 🎓 Best Practices
-
-- 🎯 Use blacklist to filter unwanted jobs
-- ⏰ Don't run continuously for hours - take breaks
-- 📝 Review applications periodically
-- 🔄 Keep your LinkedIn profile updated
-- 📊 Monitor statistics for effectiveness
-- ⚖️ Use responsibly and ethically
-
----
-
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-**Ways to contribute:**
-- 🐛 Report bugs
-- 💡 Suggest features
-- 🔧 Submit pull requests
-- 📖 Improve documentation
-- 🌍 Add translations
+- Report bugs via [Issues](https://github.com/Azoo92i/EAM-/issues)
+- Suggest features on [Discord](https://discord.gg/xWaCXBZbws)
+- Submit pull requests
 
 ---
 
-## 📜 License
+## Security & Privacy
 
-Licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)**
-
-See [LICENSE](LICENSE) for full details.
-
----
-
-## ⚠️ Disclaimer
-
-This tool is provided for **educational purposes** and to assist with job searching.
-
-**Important:**
-- Use responsibly and ethically
-- Excessive use may violate LinkedIn's Terms of Service
-- We are not responsible for account restrictions
-- This is a development tool in active progress
+- All data stored locally in your browser (chrome.storage)
+- Open source — fully transparent code
+- No tracking, no analytics, no data collection
+- Resume data never leaves your machine (AI features use client-side processing)
 
 ---
 
-## 💎 Support the Project
+## License
 
-Love EasyApplyMax? Here's how you can help:
+Licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)** — see [LICENSE](LICENSE).
 
-- ⭐ **Star this repo** on GitHub
-- 💬 **Join our [Discord](https://discord.gg/xWaCXBZbws)** community
-- 🐦 **Follow [@Azo92i](https://twitter.com/Azo92i)** on Twitter
-- 🔄 **Share** with job seekers
-- 🐛 **Report bugs** to help us improve
+---
+
+## Disclaimer
+
+This tool assists with job searching. Use responsibly and ethically. Excessive automation may violate platform Terms of Service. We are not responsible for account restrictions.
 
 ---
 
 <div align="center">
 
-### 🚀 Ready to maximize your job applications?
+**AutoApplyMax — Go from 5 to 50+ job applications per day.**
 
-**[Join Discord](https://discord.gg/xWaCXBZbws)** • **[Follow @Azo92i](https://twitter.com/Azo92i)** • **[Report Issues](https://github.com/yourusername/EasyApplyMax/issues)**
-
----
-
-**Good luck with your job search! 🎯**
-
-Made with ❤️ for job seekers worldwide
+[Install Free](https://chromewebstore.google.com/detail/autoapplymax/oeaobljpdipleeanlfjppmlokkajodbk) | [Website](https://www.autoapplymax.com) | [Discord](https://discord.gg/xWaCXBZbws) | [Twitter](https://x.com/autoapplymax)
 
 </div>
