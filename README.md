@@ -131,22 +131,6 @@ Dashboard tracks everything in real-time
 
 ---
 
-## Pricing
-
-| | Free | Premium |
-|---|---|---|
-| Auto-apply | 10/day | **Unlimited** |
-| Platforms | All 5 | All 5 |
-| Universal Autofill | Yes | Yes |
-| ATS Score Checker | Yes | Yes |
-| AI Resume Generator | 2 credits/month | **30 credits/month** |
-| AI Cover Letter | 2 credits/month | **30 credits/month** |
-| Dashboard & Analytics | Yes | Yes |
-| Priority Support | — | Yes |
-
-[See pricing →](https://www.autoapplymax.com/#pricing)
-
----
 
 ## Job Search Tips
 
