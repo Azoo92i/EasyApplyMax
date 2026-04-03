@@ -14,6 +14,18 @@
 
 ---
 
+## See It In Action
+
+<div align="center">
+
+[![AutoApplyMax Demo Video](https://img.youtube.com/vi/h7qUmzsk-Ps/maxresdefault.jpg)](https://youtu.be/h7qUmzsk-Ps)
+
+**Watch the 40s demo on YouTube**
+
+</div>
+
+---
+
 ## Why AutoApplyMax?
 
 | Without AutoApplyMax | With AutoApplyMax |
