@@ -1,6 +1,6 @@
 # AutoApplyMax
 
-**The #1 AI-powered Chrome extension for automated job applications.** Auto-apply to 50+ jobs/day across LinkedIn, Indeed, Glassdoor, WTTJ & Monster — with AI Resume Generation, Cover Letters, ATS Scoring & a full tracking Dashboard.
+**The #1 AI-powered Chrome extension for automated job applications.** Auto-apply on LinkedIn Easy Apply + one-click autofill on Indeed, Glassdoor, WTTJ & any job site — with AI Resume Generation, Cover Letters, ATS Scoring & a full tracking Dashboard.
 
 <div align="center">
 
@@ -11,6 +11,8 @@
 **[Install from Chrome Web Store](https://chromewebstore.google.com/detail/autoapplymax/oeaobljpdipleeanlfjppmlokkajodbk)** to get the full experience with automatic updates, AI features & dashboard access.
 
 </div>
+
+> **⚠️ This GitHub repository contains the open-source core of AutoApplyMax (auto-apply + autofill engine). For the full experience including AI Resume Generator, AI Cover Letters, ATS Score Checker, Dashboard & Analytics, install from the [Chrome Web Store](https://chromewebstore.google.com/detail/autoapplymax/oeaobljpdipleeanlfjppmlokkajodbk) and create a free account at [autoapplymax.com](https://www.autoapplymax.com).**
 
 ---
 
